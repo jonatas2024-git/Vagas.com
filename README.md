@@ -1,22 +1,16 @@
 # Vagas.com
 Projeto final +PraTi
 
-Planejamento do MVP - Backend
+Planejamento do MVP - Frontend
 
-Tecnologias: Java com o framework Spring Boot.
+Tecnologias: React para a interface do usuário, com JavaScript (ES6+) e CSS.
 
-Estrutura: 
+Design com Figma:
 
-Banco de Dados: PostgreSQL - para armazenar as informações de usuários, empresas e vagas.
+Criar um mood board para permitir a paleta de cores, tipografia e estilo visual.
 
-API RESTful: Criar as APIs que o frontend irá consumir: 
+Desenvolva os wireframes (esboços de faixa) para cada página do MVP (tela de login, home, busca, perfil, etc..)
 
-Endpoints para autenticação (/api/auth/login, /api/auth/register).
+Crie os mockups (designs de alta fidelidade) no Figma. Inclua detalhes como cores, ícones e espaçamento.
 
-Endpoints para usuários (/api/users/{id}, /api/users/{id}/profile).
-
-Endpoints para vagas (/api/jobs, /api/jobs/{id}).
-
-Endpoints para candidaturas (/api/applications).
-
-Segurança: Implementar a segurança com JWT (JSON Web Tokens) para autenticação de requisições. Podemos usar o Spring Security para uso no Spring Boot.
+Desenvolva um design system básico, com componentes reutilizáveis como botões, campos de entrada, e cartões de vaga. Isso acelera o desenvolvimento em React.
