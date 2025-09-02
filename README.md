@@ -36,7 +36,7 @@ Instale as dependências principais com:
 
 ```bash
 npm install
-
+```
 
 Caso esteja configurando o projeto do zero, certifique-se de instalar:
 
@@ -44,3 +44,4 @@ Caso esteja configurando o projeto do zero, certifique-se de instalar:
 npm install react@18.2.0 react-dom@18.2.0
 npm install react-router-dom@6
 npm install axios
+```
