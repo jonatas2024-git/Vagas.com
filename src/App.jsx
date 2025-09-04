@@ -9,26 +9,35 @@ import VagaDetalhe from "./pages/vaga-detalhe/VagaDetalhe";
 
 // Header global
 import Header from "./widgets/header/Header";
+import Footer from "./widgets/footer/Footer";
+
+// AuthProvider (para autenticação global)
+import { AuthProvider } from "./app/providers/AuthProvider";
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
-        {/* Header fixo em todas as páginas */}
-        <Header />
+    <AuthProvider>
+      <Router>
+        <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
+          {/* Header fixo em todas as páginas */}
+          <Header />
 
-        {/* Conteúdo das rotas */}
-        <main className="flex-1">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/vagas" element={<Vagas />} />
-            <Route path="/vaga/:id" element={<VagaDetalhe />} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+          {/* Conteúdo das rotas */}
+          <main className="flex-1">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/vagas" element={<Vagas />} />
+              <Route path="/vaga/:id" element={<VagaDetalhe />} />
+            </Routes>
+          </main>
+
+          {/* Footer fixo em todas as páginas */}
+          <Footer />
+        </div>
+      </Router>
+    </AuthProvider>
   );
 }
 
