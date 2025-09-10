@@ -9,7 +9,7 @@ import java.util.Date;
 @Component
 public class ProvedorJwt {
 
-    // Segredo forte, idealmente longo e aleatório
+    // Segredo forte, idealmente longo e aleatÃ³rio
     @Value("${jwt.segredo}")
     private String segredo;
 

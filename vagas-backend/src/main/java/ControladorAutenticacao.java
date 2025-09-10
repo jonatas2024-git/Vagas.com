@@ -44,13 +44,13 @@ public class ControladorAutenticacao {
         String nome = dados.get("nome");
 
         if (repositorioUsuario.findByEmail(email) != null) {
-            return ResponseEntity.badRequest().body("Usu·rio j· existe");
+            return ResponseEntity.badRequest().body("Usu√°rio j√° existe");
         }
 
         Usuario usuario = new Usuario(nome, email, codificadorSenha.encode(senha), "LOCAL");
         repositorioUsuario.save(usuario);
 
-        return ResponseEntity.ok("Usu·rio cadastrado com sucesso");
+        return ResponseEntity.ok("Usu√°rio cadastrado com sucesso");
     }
 
     @PostMapping("/login")
@@ -77,7 +77,7 @@ public class ControladorAutenticacao {
     public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> dados) {
         String refreshToken = dados.get("refreshToken");
         if (!provedorJwt.validarToken(refreshToken)) {
-            return ResponseEntity.status(401).body("Refresh token inv·lido");
+            return ResponseEntity.status(401).body("Refresh token inv√°lido");
         }
 
         String email = provedorJwt.pegarEmailDoToken(refreshToken);
@@ -93,10 +93,10 @@ public class ControladorAutenticacao {
     public ResponseEntity<?> testeAutenticacao(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         if (!provedorJwt.validarToken(token)) {
-            return ResponseEntity.status(401).body("Token inv·lido");
+            return ResponseEntity.status(401).body("Token inv√°lido");
         }
         String email = provedorJwt.pegarEmailDoToken(token);
-        return ResponseEntity.ok("Token v·lido para usu·rio: " + email);
+        return ResponseEntity.ok("Token v√°lido para usu√°rio: " + email);
     }
 
 
@@ -105,25 +105,25 @@ public class ControladorAutenticacao {
         String email = dados.get("email");
         Usuario usuario = repositorioUsuario.findByEmail(email);
         if (usuario == null) {
-            return ResponseEntity.badRequest().body("Usu·rio n„o encontrado");
+            return ResponseEntity.badRequest().body("Usu√°rio n√£o encontrado");
         }
 
-        // Gera token de recuperaÁ„o
+        // Gera token de recupera√ß√£o
         String token = UUID.randomUUID().toString();
         LocalDateTime expiracao = LocalDateTime.now().plusHours(1);
         TokenRecuperacaoSenha tokenRecuperacao = new TokenRecuperacaoSenha(token, expiracao, usuario);
         repositorioTokenRecuperacao.save(tokenRecuperacao);
 
-        // Gera OTP de 6 dÌgitos
+        // Gera OTP de 6 d√≠gitos
         servicoOtp.gerarOtp(usuario);
 
-        // Envia e-mail com link e instruÁıes
+        // Envia e-mail com link e instru√ß√µes
         String link = "https://localhost:8443/auth/redefinir-senha?token=" + token;
-        servicoEmail.enviarEmail(email, "RecuperaÁ„o de senha",
+        servicoEmail.enviarEmail(email, "Recupera√ß√£o de senha",
                 "Clique no link para redefinir sua senha:\n" + link +
-                        "\n\nUse tambÈm o cÛdigo OTP enviado para este e-mail para confirmar a aÁ„o.");
+                        "\n\nUse tamb√©m o c√≥digo OTP enviado para este e-mail para confirmar a a√ß√£o.");
 
-        return ResponseEntity.ok("E-mail de recuperaÁ„o enviado com OTP");
+        return ResponseEntity.ok("E-mail de recupera√ß√£o enviado com OTP");
     }
 
     @PostMapping("/redefinir-senha")
@@ -134,14 +134,14 @@ public class ControladorAutenticacao {
 
         TokenRecuperacaoSenha tokenRecuperacao = repositorioTokenRecuperacao.findByToken(token);
         if (tokenRecuperacao == null || tokenRecuperacao.getExpiracao().isBefore(LocalDateTime.now())) {
-            return ResponseEntity.badRequest().body("Token inv·lido ou expirado");
+            return ResponseEntity.badRequest().body("Token inv√°lido ou expirado");
         }
 
         Usuario usuario = tokenRecuperacao.getUsuario();
 
         // Valida OTP
         if (!servicoOtp.validarOtp(usuario.getEmail(), codigoOtp)) {
-            return ResponseEntity.badRequest().body("CÛdigo OTP inv·lido ou expirado");
+            return ResponseEntity.badRequest().body("C√≥digo OTP inv√°lido ou expirado");
         }
 
         // Atualiza senha
@@ -160,12 +160,12 @@ public class ControladorAutenticacao {
         String email = dados.get("email");
 
         Usuario usuario = repositorioUsuario.findByEmail(email);
-        if (usuario == null) return ResponseEntity.badRequest().body("Usu·rio n„o encontrado");
+        if (usuario == null) return ResponseEntity.badRequest().body("Usu√°rio n√£o encontrado");
 
         // Gera OTP e envia por e-mail
         servicoOtp.gerarOtp(usuario);
 
-        return ResponseEntity.ok("CÛdigo OTP enviado por e-mail");
+        return ResponseEntity.ok("C√≥digo OTP enviado por e-mail");
     }
 
     @PostMapping("/confirmar-acao-critica")
@@ -174,8 +174,8 @@ public class ControladorAutenticacao {
         String codigo = dados.get("codigo");
 
         if (!servicoOtp.validarOtp(email, codigo)) {
-            return ResponseEntity.badRequest().body("CÛdigo OTP inv·lido ou expirado");
+            return ResponseEntity.badRequest().body("C√≥digo OTP inv√°lido ou expirado");
         }
-        return ResponseEntity.ok("AÁ„o crÌtica realizada com sucesso");
+        return ResponseEntity.ok("A√ß√£o cr√≠tica realizada com sucesso");
     }
 }

@@ -13,7 +13,7 @@ public class ServicoOtp {
         this.servicoEmail = servicoEmail;
     }
 
-    // Gera código OTP e envia por e-mail
+    // Gera cÃ³digo OTP e envia por e-mail
     public void gerarOtp(Usuario usuario) {
         String codigo = String.format("%06d", new Random().nextInt(999999));
         LocalDateTime expiracao = LocalDateTime.now().plusMinutes(5);
@@ -21,17 +21,17 @@ public class ServicoOtp {
         OtpUsuario otp = new OtpUsuario(codigo, expiracao, usuario);
         repositorioOtpUsuario.save(otp);
 
-        servicoEmail.enviarEmail(usuario.getEmail(), "Código OTP", 
-            "Seu código OTP é: " + codigo + "\nValido por 5 minutos.");
+        servicoEmail.enviarEmail(usuario.getEmail(), "CÃ³digo OTP", 
+            "Seu cÃ³digo OTP Ã©: " + codigo + "\nValido por 5 minutos.");
     }
 
-    // Valida código OTP
+    // Valida cÃ³digo OTP
     public boolean validarOtp(String email, String codigo) {
         OtpUsuario otp = repositorioOtpUsuario.findByCodigoAndUsuarioEmail(codigo, email);
         if (otp == null || otp.getExpiracao().isBefore(LocalDateTime.now())) {
             return false;
         }
-        // Remove OTP após uso
+        // Remove OTP apÃ³s uso
         repositorioOtpUsuario.delete(otp);
         return true;
     }

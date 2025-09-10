@@ -61,7 +61,7 @@ public class SecurityConfig {
         // Adiciona filtro JWT antes do UsernamePasswordAuthenticationFilter
         http.addFilterBefore(filtroJwt, UsernamePasswordAuthenticationFilter.class);
 
-        // ?? Cabeçalhos de segurança
+        // ?? CabeÃ§alhos de seguranÃ§a
         http.headers()
             .contentSecurityPolicy("default-src 'self';") // CSP
             .and()
@@ -90,19 +90,19 @@ public class SegurtiyConfig {
             // Desativa CSRF para JWT
             .csrf().disable()
 
-            // Sessão sem estado, usamos JWT
+            // SessÃ£o sem estado, usamos JWT
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
 
             // Regras de acesso
             .authorizeHttpRequests()
-            .requestMatchers("/auth/**").permitAll() // endpoints de autenticação públicos
+            .requestMatchers("/auth/**").permitAll() // endpoints de autenticaÃ§Ã£o pÃºblicos
             .requestMatchers(HttpMethod.GET, "/vagas/**").permitAll() // listagem de vagas aberta
             .anyRequest().authenticated()
             .and()
 
-            // Cabeçalhos de segurança
+            // CabeÃ§alhos de seguranÃ§a
             .headers()
             .contentSecurityPolicy("default-src 'self'; script-src 'self'; style-src 'self';")
             .and()

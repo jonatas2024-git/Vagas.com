@@ -26,10 +26,10 @@ public class ServicoOAuth2Google implements OAuth2UserService<OAuth2UserRequest,
         String email = usuarioGoogle.getAttribute("email");
         String nome = usuarioGoogle.getAttribute("name");
 
-        // Verifica se o usuário já existe
+        // Verifica se o usuÃ¡rio jÃ¡ existe
         Usuario usuario = repositorioUsuario.findByEmail(email);
         if (usuario == null) {
-            // Cria novo usuário
+            // Cria novo usuÃ¡rio
             usuario = new Usuario(nome, email, "", "GOOGLE");
             repositorioUsuario.save(usuario);
         }
