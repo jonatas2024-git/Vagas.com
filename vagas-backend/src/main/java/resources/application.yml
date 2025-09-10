@@ -1,0 +1,53 @@
+# Porta e SSL
+server:
+  port: 8443
+  ssl:
+    key-store: classpath:vagas.p12
+    key-store-password: asdf123
+    key-store-type: PKCS12
+    key-alias: vagas
+spring:
+  datasource:
+    url: jdbc:h2:mem:vagasdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    platform: h2
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+jwt:
+  segredo: segredosecreto123456   
+  expiracao: 3600000             # 1 hora em milissegundos
+  expiracaoRefresh: 86400000     # 24 horas em milissegundos
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: seu-client-id-aqui
+            client-secret: seu-client-secret-aqui
+            scope: openid, profile, email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: email
+
+spring:
+  mail:
+    host: smtp.gmail.com          # servidor SMTP
+    port: 587
+    username: seu-email@gmail.com # seu e-mail
+    password: sua-senha-email     # senha ou App Password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls.enable: true
