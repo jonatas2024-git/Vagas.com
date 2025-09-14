@@ -12,6 +12,9 @@ public class Empresa {
 
     private String nome;
     
+    @Column(name = "nome_fantasia", nullable = false)
+    private String nomeFantasia;
+
     @OneToMany(mappedBy = "empresa")
     private List<Vaga> vagas;
 
@@ -30,6 +33,14 @@ public class Empresa {
 
     public void setNome(String nome) {
         this.nome = nome;
+    }
+    
+    public String getNomeFantasia() {
+        return nomeFantasia;
+    }
+
+    public void setNomeFantasia(String nomeFantasia) {
+        this.nomeFantasia = nomeFantasia;
     }
 
     public List<Vaga> getVagas() {
