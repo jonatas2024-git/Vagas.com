@@ -6,6 +6,8 @@ import Login from "./pages/login/login";
 import Register from "./pages/register";
 import Vagas from "./pages/vagas/Vagas";
 import VagaDetalhe from "./pages/vaga-detalhe/VagaDetalhe";
+import Resultados from "./pages/vagas/Resultados"; // nova página
+import Perfil from "./pages/perfil/Perfil";
 
 // Header global
 import Header from "./widgets/header/Header";
@@ -29,7 +31,9 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/vagas" element={<Vagas />} />
+              <Route path="/vagas/busca" element={<Resultados />} /> {/* nova rota */}
               <Route path="/vaga/:id" element={<VagaDetalhe />} />
+              <Route path="/perfil" element={<Perfil />} />
             </Routes>
           </main>
 
