@@ -1,83 +1,65 @@
-# Vagas.com
-Projeto final +PraTi
-
-Planejamento do MVP - Candidato/Usuário.
+# Projeto de Conclusão - Orientações para desenvolvimento do Back-end.
 
 
-Funcionalidades do Usuário (Candidato)
+A seguir vocês encontrarão um conjunto de requisitos funcionais e não funcionais organizados de forma clara e objetiva para orientar o desenvolvimento do Projeto de Conclusão da nossa formação, no que diz respeito ao Back-end.
 
-Cadastro e Login de Candidato:
-Descrição: Permite que o usuário crie uma conta com e-mail e senha, e faça login.
+Nem todos os grupos verão nesses requisitos sentido, devido à natureza do seu projeto. Portanto, cada equipe deverá entrar em contato comigo para adaptar estes itens ao escopo do trabalho e escolher as ferramentas mais adequadas.
 
-Backlog: 
+Usem este material como referência para estruturar, planejar e documentar suas entregas.
 
-Criação da tela de cadastro.
-Criação da tela de login.
-Lógica para registrar novo usuário no banco de dados.
-Lógica para autenticar o usuário (login).
-Validação de campos (e-mail, senha).
+Requisitos Funcionais:
 
-Busca de Vagas:
-Descrição: O usuário pode pesquisar vagas por palavra-chave e localização.
+* Autenticação e Segurança
 
-Backlog: 
+  > Login social (OAuth2) e cadastro próprio
+  > Emissão de token JWT com expiração e refresh
+  > Fluxo de recuperação de senha por e-mail (link único, validade limitada)
+  > 2FA opcional via OTP para ações críticas
 
-Criação de campo de busca na página principal.
-Lógica de busca para filtrar vagas com base em texto.
-Exibir lista de vagas encontradas em um formato de cartão.
+* Gestão de Usuário
+  > Entidade “Perfil” com dados pessoais (nome, e-mail) e preferências (tema, notificações)
+  > Consulta e edição de perfil e configurações
 
+* CRUD de Entidades
+  > Criação, leitura, atualização e exclusão para todas as entidades de domínio
+  > Filtros dinâmicos e paginação em listagens
 
-Visualização e Candidatura a Vagas:
-Descrição: Ao clicar em uma vaga, o candidato vê os detalhes e pode se candidatar.
+* Detalhes de Item
+  > Consulta detalhada incluindo relacionamentos e metadados
+  > Cálculo de métricas simples (contagem, soma, média)
 
-Backlog:
+* Pesquisa Avançada
+  > Busca full-text com filtros em múltiplos campos
+  > Registro de histórico de buscas para sugestões e análise
+  > Requisitos Não Funcionais:
 
-Criação da página de detalhes da vaga.
-Exibir título, descrição, requisitos, e informações da empresa.
-Botão "Candidatar-se".
-Lógica para registrar a candidatura no banco de dados.
+* Segurança
+  > Proteção de APIs via JWT e HTTPS
+  > Mitigação de SQL Injection, XSS e CSRF
+  > Cabeçalhos de segurança (CSP, HSTS, X-Frame-Options)
 
+* Performance
+  > Cache distribuído (Redis ou equivalente)
+  > Lazy loading, índices adequados e otimização de queries
 
-Planejamento do MVP - Empresa/Recrutador.
+* Escalabilidade
+  > Arquitetura modular ou microsserviços
+  > Componentes auxiliares em linguagens diversas, conforme necessidade
 
-Funcionalidades da Empresa (Recrutador):
+* Manutenibilidade e Deploy
+  > Containerização com Docker
+  > Pipeline de CI/CD (GitHub Actions, GitLab CI ou Jenkins)
 
-Cadastro e Login de Empresa:
-Descrição: Permite que uma empresa crie uma conta e faça login.
+* Documentação
+  > Guia de configuração do ambiente local
+  > Exemplos de chamadas de API (Postman/Insomnia)
+  > Diagramas de modelo de dados (ER) e fluxos principais
 
-Backlog: 
-
-Criação da tela de cadastro de empresa (diferente da de candidato).
-Lógica para registrar a empresa no banco de dados.
-
-
-Publicação de Vagas:
-Descrição: A empresa pode criar e publicar novas vagas.
-
-Backlog: 
-
-Criação de formulário para publicação de vaga (título, descrição, etc.).
-Lógica para salvar a vaga no banco de dados, associada à empresa.
-
-Visualização de Candidatos por Vaga:
-Descrição: A empresa pode ver a lista de candidatos que se candidatam a uma vaga específica.
-
-Backlog: 
-
-Criação da página de "minhas vagas".
-Exibir a lista de vagas publicadas pela empresa.
-Ao clicar em uma vaga, mostrar a lista de candidatos que se aplicam.
-
-
-
-Planejamento do MVP - Integração (Frontend / Backend).
-
-
-O frontend irá fazer chamadas HTTP (usando fetch ou bibliotecas como Axios) para os endpoints do backend.
-
-
-O backend irá receber essas requisições, processar a lógica de negócio e interagir com o banco de dados.
-
-
-Os dados serão retornados em formato JSON.
-
+Tecnologias (sugestões; a definir por projeto):
+  > Back-end: Java (Spring Boot ou similar)
+  > Componentes auxiliares: serviços em outras linguagens conforme necessidade
+  > Banco de Dados: MySQL, PostgreSQL (relacional) ou MongoDB (NoSQL)
+  > Cache: Redis (cache distribuído)
+  > Containerização: Docker
+  > CI/CD: GitHub Actions, GitLab CI ou Jenkins
+Documentação de API: Swagger / OpenAPI
