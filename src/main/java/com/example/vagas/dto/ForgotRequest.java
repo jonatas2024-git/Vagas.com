@@ -1,0 +1,14 @@
+package com.example.vagas.dto;
+
+public class ForgotRequest {
+    
+    private String username;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+}
