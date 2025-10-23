@@ -1,14 +1,14 @@
-package com.example.vagas.security.jwt;
+package com.example.vagas.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
+import javax.crypto.SecretKey; 
+// REMOVIDO: import java.security.Key; // Não é mais usado
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,17 +17,13 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    // Injeta a chave secreta do application.properties
     @Value("${app.security.jwt.secret}")
     private String SECRET_KEY;
     
-    // Tempo de expiração do token (Exemplo: 24 horas em milissegundos)
-    private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 24; 
+    private static final long ACCESS_TOKEN_EXPIRATION_TIME = 1000 * 60 * 60 * 24; 
 
-    // --- Métodos de Geração de Token ---
 
     public String generateToken(String username) {
-        // Usa um mapa vazio para claims adicionais (se necessário)
         return generateToken(new HashMap<>(), username);
     }
 
@@ -37,12 +33,12 @@ public class JwtService {
     ) {
         return Jwts
                 .builder()
-                .setClaims(extraClaims)
-                .setSubject(username)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .claims(extraClaims) 
+                .subject(username) 
+                .issuedAt(new Date(System.currentTimeMillis())) 
                 // Define o tempo de expiração
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME)) 
-                .signWith(getSignInKey(), SignatureAlgorithm.HS256) // Assina com a chave secreta
+                .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_TIME)) 
+                .signWith(getSignInKey()) 
                 .compact();
     }
 
@@ -52,7 +48,6 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    // Nota: O username aqui deve ser o UserDetails.getUsername()
     public boolean isTokenValid(String token, String username) {
         final String tokenUsername = extractUsername(token);
         return (tokenUsername.equals(username) && !isTokenExpired(token));
@@ -72,21 +67,18 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        // CORREÇÃO: Usando a sintaxe moderna do JJWT para o parser
         return Jwts
                 .parser()
-                .setSigningKey(getSignInKey()) // Define a chave de assinatura
+                .verifyWith(getSignInKey()) 
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     // --- Métodos Auxiliares de Chave ---
 
-    private Key getSignInKey() {
-        // Decodifica a chave de base64 (string) para bytes
+    private SecretKey getSignInKey() { 
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
-        // Cria a chave de segurança HMAC
-        return Keys.hmacShaKeyFor(keyBytes);
+        return Keys.hmacShaKeyFor(keyBytes); 
     }
 }

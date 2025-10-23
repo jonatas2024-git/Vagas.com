@@ -13,6 +13,14 @@ public class User {
     @Column(name = "username", nullable = false, unique = true)
     private String username;
 
+    // CORREÇÃO: ADICIONAR CAMPO NAME
+    @Column(name = "name")
+    private String name;
+
+    // CORREÇÃO: ADICIONAR CAMPO EMAIL
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
+
     @Column(name = "password", nullable = false)
     private String password;
 
@@ -33,6 +41,26 @@ public class User {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    // NOVO: GETTER PARA NAME
+    public String getName() {
+        return name;
+    }
+    
+    // NOVO: SETTER PARA NAME (Resolve o erro no CustomOAuth2UserService)
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    // CORREÇÃO: ADICIONAR GETTER PARA EMAIL
+    public String getEmail() {
+        return email;
+    }
+
+    // CORREÇÃO: ADICIONAR SETTER PARA EMAIL
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {

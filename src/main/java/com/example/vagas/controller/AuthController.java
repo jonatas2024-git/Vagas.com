@@ -1,7 +1,7 @@
 package com.example.vagas.controller;
 
 import com.example.vagas.dto.LoginRequest;
-import com.example.vagas.dto.AuthResponse;
+// REMOVIDO: import com.example.vagas.dto.AuthResponse; 
 import com.example.vagas.dto.ForgotRequest; 
 import com.example.vagas.dto.ResetRequest;  
 import com.example.vagas.model.User;
@@ -31,6 +31,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        // O tipo AuthResponse é inferido de authService.authenticateUser() e não requer o import explícito.
         return authService.authenticateUser(loginRequest.getUsername(), loginRequest.getPassword())
                 .<ResponseEntity<?>>map(authResponse -> 
                         ResponseEntity.ok(authResponse)) 
@@ -46,10 +47,11 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotRequest forgotRequest) {
         try {
-            authService.requestPasswordReset(forgotRequest.getUsername());
-            return ResponseEntity.ok().body("Se o usuário estiver cadastrado, um link de recuperação foi enviado.");
+            authService.requestPasswordReset(forgotRequest.getEmail());
+            
+            return ResponseEntity.ok().body("Se o email estiver cadastrado, um link de recuperação foi enviado.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.ok().body("Se o email estiver cadastrado, um link de recuperação foi enviado.");
         }
     }
     

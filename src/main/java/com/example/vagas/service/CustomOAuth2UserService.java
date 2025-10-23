@@ -20,33 +20,35 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        // 1. Carrega o usuário padrão do Google/OAuth2
         OAuth2User oauth2User = super.loadUser(userRequest);
 
-        // 2. Extrai o e-mail (username)
         String email = oauth2User.getAttribute("email");
-        String name = oauth2User.getAttribute("name");
+        String name = oauth2User.getAttribute("name"); 
         
-        // 3. Verifica se o usuário já existe no nosso banco de dados
         Optional<User> userOptional = userRepository.findByUsername(email);
         
         User user;
         if (userOptional.isPresent()) {
-            // Usuário existente: Atualizar se necessário (ex: nome, foto)
             user = userOptional.get();
+            
+            if (name != null) {
+                user.setName(name);
+            }
         } else {
-            // Novo usuário: Criar um registro no nosso banco
             user = new User();
             user.setId(UUID.randomUUID()); 
             user.setUsername(email);
-            // IMPORTANTE: Definimos uma senha aleatória para usuários OAuth2
-            // Assim, eles não podem logar via formulário tradicional.
-            user.setPassword("OAUTH2_USER_NO_PASSWORD"); 
             
-            user = userRepository.save(user);
+            if (name != null) {
+                user.setName(name);
+            }
+            
+            user.setPassword("OAUTH2_USER_NO_PASSWORD"); 
         }
 
-        // 4. Retorna o OAuth2User padrão (o Spring fará o resto)
+        
+        userRepository.save(user);
+
         return oauth2User; 
     }
 }

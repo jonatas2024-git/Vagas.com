@@ -1,14 +1,21 @@
 package com.example.vagas.dto;
 
+import lombok.Data;
+
+@Data // Simplifica com Lombok, use se a dependência estiver no pom.xml
 public class ForgotRequest {
     
-    private String username;
+    // CORREÇÃO: O service usa o email para enviar o link
+    private String email;
 
-    public String getUsername() {
-        return username;
+    // Se NÃO ESTIVER usando Lombok, MANTENHA os métodos abaixo:
+    /*
+    public String getEmail() {
+        return email;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setEmail(String email) {
+        this.email = email;
     }
+    */
 }

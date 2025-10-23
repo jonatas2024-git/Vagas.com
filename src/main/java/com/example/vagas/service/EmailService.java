@@ -11,14 +11,18 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
-    public void sendResetPasswordEmail(String toEmail, String token) {
+    /**
+     * Envia um e-mail de recuperação de senha para o usuário.
+     * * @param toEmail O endereço de e-mail do destinatário.
+     * @param resetLink O link completo de redefinição de senha (com o token).
+     */
+    public void sendPasswordResetEmail(String toEmail, String resetLink) {
         SimpleMailMessage message = new SimpleMailMessage();
-
-        String frontendUrl = "http://localhost:3000/reset-password"; 
-        String resetLink = frontendUrl + "?token=" + token;
 
         message.setTo(toEmail);
         message.setSubject("Recuperação de Senha - Vagas.com");
+        
+        // O texto da mensagem usa o link completo fornecido pelo AuthService.
         message.setText("Olá,\n\n" +
                         "Você solicitou a recuperação de senha. Use o link abaixo para criar uma nova:\n\n" +
                         resetLink +

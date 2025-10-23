@@ -27,7 +27,6 @@
 /home/jonataspereira/Documentos/PRATI/Vagas.com/vagas/src/main/java/com/example/vagas/security/CustomUserDetailsService.java
 /home/jonataspereira/Documentos/PRATI/Vagas.com/vagas/src/main/java/com/example/vagas/security/JwtRequestFilter.java
 /home/jonataspereira/Documentos/PRATI/Vagas.com/vagas/src/main/java/com/example/vagas/security/JwtService.java
-/home/jonataspereira/Documentos/PRATI/Vagas.com/vagas/src/main/java/com/example/vagas/security/JwtTokenProvider.java
 /home/jonataspereira/Documentos/PRATI/Vagas.com/vagas/src/main/java/com/example/vagas/security/OAuth2AuthenticationSuccessHandler.java
 /home/jonataspereira/Documentos/PRATI/Vagas.com/vagas/src/main/java/com/example/vagas/service/AuthService.java
 /home/jonataspereira/Documentos/PRATI/Vagas.com/vagas/src/main/java/com/example/vagas/service/CustomOAuth2UserService.java

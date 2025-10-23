@@ -7,36 +7,26 @@ import com.example.vagas.repository.UserRepository;
 import com.example.vagas.repository.PerfilRepository; 
 import com.example.vagas.repository.PasswordResetTokenRepository;
 import com.example.vagas.dto.AuthResponse; 
-import com.example.vagas.security.jwt.JwtService; 
+import com.example.vagas.security.JwtService; 
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional; 
+import lombok.RequiredArgsConstructor;
 import java.util.Optional;
 import java.util.UUID; 
 import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PerfilRepository perfilRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired 
-    private JwtService jwtService;
-    
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private PasswordResetTokenRepository tokenRepository;
+    private final UserRepository userRepository;
+    private final PerfilRepository perfilRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final EmailService emailService;
+    private final PasswordResetTokenRepository tokenRepository;
 
     @Transactional
     public User registerUser(User user) {
@@ -52,7 +42,6 @@ public class AuthService {
         Perfil perfil = new Perfil(newUser, newUser.getUsername());
         perfilRepository.save(perfil);
         
-        // Ajuste: Garante que o objeto Perfil está ligado ao User (se for um campo)
         newUser.setPerfil(perfil); 
 
         return newUser;
@@ -68,7 +57,6 @@ public class AuthService {
                 String token = jwtService.generateToken(user.getUsername()); 
 
                 AuthResponse response = new AuthResponse();
-                // setToken() e setUsername() agora existem devido ao @Data em AuthResponse
                 response.setToken(token);
                 response.setUsername(user.getUsername());
 
@@ -80,19 +68,24 @@ public class AuthService {
     }
     
     @Transactional
-    public void requestPasswordReset(String username) throws Exception {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new Exception("Usuário não encontrado."));
+    public void requestPasswordReset(String email) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("Usuário não encontrado com o email: " + email));
 
-        // 1. Gerar e Salvar o Token
-        String token = UUID.randomUUID().toString();
-        LocalDateTime expiryDate = LocalDateTime.now().plusHours(1); 
+        String tokenValue = UUID.randomUUID().toString();
+        LocalDateTime expiryDate = LocalDateTime.now().plusHours(1);
 
-        PasswordResetToken resetToken = new PasswordResetToken(token, user, expiryDate);
+        PasswordResetToken resetToken = new PasswordResetToken(tokenValue, user, expiryDate);
         tokenRepository.save(resetToken);
 
-        // 2. Enviar E-mail
-        emailService.sendResetPasswordEmail(user.getUsername(), token);
+        String resetLink = "http://sua-url-frontend/reset-password?token=" + tokenValue;
+
+        try {
+            // Este método será implementado no EmailService:
+            emailService.sendPasswordResetEmail(user.getEmail(), resetLink);
+        } catch (Exception e) {
+            System.err.println("Falha ao enviar e-mail para " + user.getEmail() + ": " + e.getMessage());
+        }
     }
 
     @Transactional
@@ -100,20 +93,15 @@ public class AuthService {
         PasswordResetToken resetToken = tokenRepository.findByToken(token)
                 .orElseThrow(() -> new Exception("Token inválido ou expirado."));
 
-        // getExpiryDate() agora existe devido ao @Data em PasswordResetToken
         if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            // Removendo o token expirado para limpeza
             tokenRepository.delete(resetToken); 
             throw new Exception("Token expirado.");
         }
 
-        // 1. Atualizar a Senha
-        // getUser() agora existe devido ao @Data em PasswordResetToken
         User user = resetToken.getUser();
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
 
-        // 2. Invalidar/Deletar o Token
         tokenRepository.delete(resetToken);
     }
 }

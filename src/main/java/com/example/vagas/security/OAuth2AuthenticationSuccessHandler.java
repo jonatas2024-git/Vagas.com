@@ -1,10 +1,9 @@
-package com.example.vagas.security.oauth2;
+package com.example.vagas.security; 
 
-import com.example.vagas.security.jwt.JwtService;
+//import com.example.vagas.security.JwtService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -21,14 +20,13 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     @Value("${app.oauth2.redirectUri}")
     private String redirectUri; 
 
-    @Autowired
+    // CORREÇÃO: Remove @Autowired (não é mais necessário para injeção por construtor)
     public OAuth2AuthenticationSuccessHandler(JwtService jwtService) {
         this.jwtService = jwtService;
     }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        
         
         String username = authentication.getName(); 
         

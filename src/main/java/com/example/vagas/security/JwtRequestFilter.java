@@ -1,13 +1,17 @@
 package com.example.vagas.security;
 
-import com.example.vagas.security.jwt.JwtService; 
+//import com.example.vagas.security.JwtService; 
 import io.jsonwebtoken.ExpiredJwtException; 
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger; 
+import org.slf4j.LoggerFactory; 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull; 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +25,8 @@ import java.io.IOException;
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtRequestFilter.class);
+
     @Autowired
     private JwtService jwtService; 
     
@@ -28,58 +34,52 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private UserDetailsService userDetailsService; 
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request, // CORRIGIDO: Adiciona @NonNull
+            @NonNull HttpServletResponse response, // CORRIGIDO: Adiciona @NonNull
+            @NonNull FilterChain filterChain) // CORRIGIDO: Adiciona @NonNull
             throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
         String jwt = null;
         String userEmail = null;
 
-        // 1. Extração do Token
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
             
             try {
-                // Tenta extrair o email (subject)
                 userEmail = jwtService.extractUsername(jwt);
             } catch (ExpiredJwtException e) {
-                // CORREÇÃO: Passa o objeto de exceção 'e' como argumento para o logger.warn
-                logger.warn("JWT Token expirado: {}", e); // Linha 48 Corrigida
+                logger.warn("JWT Token expirado. URI: {}", request.getRequestURI()); 
             } catch (SignatureException e) {
-                // CORREÇÃO: Passa o objeto de exceção 'e' como argumento para o logger.error
-                logger.error("JWT Token com assinatura inválida: {}", e); // Linha 51 Corrigida
+                logger.error("JWT Token com assinatura inválida. URI: {}", request.getRequestURI(), e); 
             } catch (Exception e) {
-                // CORREÇÃO: Passa o objeto de exceção 'e' como argumento para o logger.error
-                 logger.error("Erro ao extrair username do JWT: {}", e); // Linha 54 Corrigida
+                 logger.error("Erro ao processar JWT. URI: {}", request.getRequestURI(), e); 
             }
         }
-
-        // 2. Validação e Configuração do Contexto de Segurança
-        // Verifica se o email foi extraído e se o usuário AINDA não está autenticado
+        
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             
-            // Carrega os detalhes do usuário a partir do UserDetailsService
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+            try {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
 
-            // Valida o token (checa validade e expiração novamente)
-            if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {
-                
-                // Cria o objeto de autenticação
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, 
-                        null, 
-                        userDetails.getAuthorities()
-                );
-                
-                // Adiciona detalhes da requisição
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                
-                // Define o usuário como autenticado
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {
+                    
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, 
+                            null, 
+                            userDetails.getAuthorities()
+                    );
+                    
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            } catch (Exception e) {
+                logger.error("Falha ao carregar UserDetails ou validar token: {}", e.getMessage());
             }
         }
 
-        // 3. Continua a cadeia de filtros
         filterChain.doFilter(request, response);
     }
 }

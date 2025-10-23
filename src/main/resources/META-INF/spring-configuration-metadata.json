@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "app.security.jwt.secret",
+      "type": "java.lang.String",
+      "description": "A chave secreta base64 usada para assinar e verificar tokens JWT."
+    },
+    {
+      "name": "app.oauth2.redirectUri",
+      "type": "java.lang.String",
+      "description": "A URL do frontend para onde o usuário será redirecionado após a autenticação OAuth2 (com o token JWT na query)."
+    }
+  ]
+}

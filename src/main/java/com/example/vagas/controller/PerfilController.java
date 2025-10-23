@@ -8,7 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
+// REMOVIDO: import java.util.UUID; // Não está mais em uso.
 
 @RestController
 @RequestMapping("/api/perfil")
@@ -25,11 +25,8 @@ public class PerfilController {
     public ResponseEntity<Perfil> getPerfilLogado() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        
-      
-        UUID mockedUserId = UUID.fromString("00000000-0000-0000-0000-000000000001"); 
-        
-        return perfilService.buscarPerfilPorUserId(mockedUserId)
+
+        return perfilService.buscarPerfilPorUsername(username)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

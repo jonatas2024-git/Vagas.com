@@ -2,7 +2,9 @@ package com.example.vagas.config;
 
 import com.example.vagas.security.JwtRequestFilter; 
 import com.example.vagas.service.CustomOAuth2UserService;
-import com.example.vagas.security.oauth2.OAuth2AuthenticationSuccessHandler; // NOVO IMPORT
+// Import Corrigido: A classe está diretamente no pacote 'security', não em 'security.oauth2'.
+import com.example.vagas.security.OAuth2AuthenticationSuccessHandler; 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,7 +26,6 @@ public class WebSecurityConfig {
     @Autowired
     private CustomOAuth2UserService customOAuth2UserService;
     
-    // NOVO: Injeta o manipulador de sucesso
     @Autowired 
     private OAuth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
 
@@ -41,11 +42,16 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/empresas", "/api/empresas/**").permitAll() 
                 .anyRequest().authenticated()
             )
+            .headers(headers -> headers
+                .xssProtection(xss -> {}) 
+                .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'")) 
+                .frameOptions(frameOptions -> frameOptions.deny())
+                .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000)) 
+            )
             .oauth2Login(oauth2 -> oauth2
                 .userInfoEndpoint(userInfo -> userInfo
                     .userService(customOAuth2UserService)
                 )
-                // CORREÇÃO: Adiciona o manipulador de sucesso para gerar o JWT
                 .successHandler(oauth2AuthenticationSuccessHandler) 
             );
 
