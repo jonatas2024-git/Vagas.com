@@ -75,6 +75,12 @@ public class VagaController {
             })
             .orElse(ResponseEntity.notFound().build());
     }
+    @PutMapping("/{id}")
+    public ResponseEntity<Vaga> update1Vaga(@PathVariable Long id, @RequestBody Vaga vagaDetails) {
+        return vagaService.atualizarVaga(id, vagaDetails)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
     /**
      * DELETE /api/vagas/{id} 

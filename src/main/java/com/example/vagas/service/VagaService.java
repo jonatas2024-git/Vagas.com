@@ -37,6 +37,17 @@ public class VagaService {
     public Vaga salvarVaga(Vaga vaga) {
         return vagaRepository.save(vaga);
     }
+
+    // Atualizar vaga existente - Refazer
+    public Optional<Vaga> atualizarVaga(Long id, Vaga detalhesVaga) {
+        return vagaRepository.findById(id).map(vaga -> {
+            vaga.setTitulo(detalhesVaga.getTitulo());
+            if(detalhesVaga.getEmpresa() != null) {
+                vaga.setEmpresa(detalhesVaga.getEmpresa());
+            }
+            return vagaRepository.save(vaga);
+        });
+    }
     
     // 4. Deletar vaga
     public void deletarVaga(Long id) {
