@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # 1. Serviço do Banco de Dados PostgreSQL
+  database:
+    image: postgres:15-alpine
+    container_name: vagas_postgres
+    ports:
+      - "5432:5432" 
+    environment:
+      POSTGRES_USER: ${DB_USER:-vagasuser} 
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-vagaspass} 
+      POSTGRES_DB: ${DB_NAME:-vagasdb} 
+    volumes:
+      - vagas-data:/var/lib/postgresql/data 
+
+  # 2. Serviço da Aplicação Spring Boot
+  backend:
+    build:
+      context: . 
+      dockerfile: Dockerfile 
+    container_name: vagas_backend
+    ports:
+      - "8080:8080" 
+    depends_on:
+      - database 
+    environment:
+      # Passa as variáveis de ambiente necessárias para o application.properties
+      DB_HOST: database 
+      DB_USER: ${DB_USER:-vagasuser}
+      DB_PASSWORD: ${DB_PASSWORD:-vagaspass}
+      DB_NAME: ${DB_NAME:-vagasdb}
+      
+      # Outras variáveis necessárias (JWT e Mail)
+      APP_SECURITY_JWT_SECRET: ${JWT_SECRET} 
+      SPRING_MAIL_USERNAME: ${MAIL_USER}
+      SPRING_MAIL_PASSWORD: ${MAIL_PASSWORD}
+      
+    # Configuração de reinicialização para estabilidade
+    restart: always
+
+# Volumes para persistência
+volumes:
+  vagas-data:
