@@ -2,7 +2,6 @@ package com.example.vagas.config;
 
 import com.example.vagas.security.JwtRequestFilter; 
 import com.example.vagas.service.CustomOAuth2UserService;
-// Import Corrigido: A classe está diretamente no pacote 'security', não em 'security.oauth2'.
 import com.example.vagas.security.OAuth2AuthenticationSuccessHandler; 
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +39,10 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll() 
                 .requestMatchers("/api/vagas", "/api/vagas/**").permitAll()
                 .requestMatchers("/api/empresas", "/api/empresas/**").permitAll() 
+                // **ADICIONAL**: Permitindo acesso para endpoints do Swagger/OpenAPI
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                // **ADICIONAL**: Permitindo endpoints de login social
+                .requestMatchers("/oauth2/authorization/**", "/login/oauth2/code/*").permitAll() 
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers
@@ -49,9 +52,14 @@ public class WebSecurityConfig {
                 .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000)) 
             )
             .oauth2Login(oauth2 -> oauth2
+                // **CORREÇÃO**: Garante que o Spring Security aceite a URI de retorno do Google
+                .redirectionEndpoint(redirection -> redirection
+                    .baseUri("/login/oauth2/code/*")
+                )
                 .userInfoEndpoint(userInfo -> userInfo
                     .userService(customOAuth2UserService)
                 )
+                // Usando o Handler customizado para redirecionar ao Frontend com o token
                 .successHandler(oauth2AuthenticationSuccessHandler) 
             );
 
