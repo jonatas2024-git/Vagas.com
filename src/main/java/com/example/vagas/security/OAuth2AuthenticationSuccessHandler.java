@@ -1,10 +1,10 @@
 package com.example.vagas.security; 
 
-//import com.example.vagas.security.JwtService;
+import com.example.vagas.AppProperties; // Importe a classe AppProperties
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
+// REMOVIDO: import org.springframework.beans.factory.annotation.Value; // Não precisamos mais do @Value
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -16,13 +16,12 @@ import java.io.IOException;
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtService jwtService;
-    
-    @Value("${app.oauth2.redirectUri}")
-    private String redirectUri; 
+    private final AppProperties appProperties; // NOVO: Injete a classe AppProperties
 
-    // CORREÇÃO: Remove @Autowired (não é mais necessário para injeção por construtor)
-    public OAuth2AuthenticationSuccessHandler(JwtService jwtService) {
+    // Construtor para injeção de dependência
+    public OAuth2AuthenticationSuccessHandler(JwtService jwtService, AppProperties appProperties) {
         this.jwtService = jwtService;
+        this.appProperties = appProperties;
     }
 
     @Override
@@ -31,6 +30,9 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String username = authentication.getName(); 
         
         String token = jwtService.generateToken(username);
+        
+        // CORREÇÃO: Pega a URI de redirecionamento do seu AppProperties
+        String redirectUri = appProperties.getAuth().getAuthorizedRedirectUri();
 
         String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
                 .queryParam("token", token) 
