@@ -1,44 +1,61 @@
 package com.example.vagas.controller;
 
-import com.example.vagas.model.Perfil;
+// Importações para a nova lógica baseada em DTOs e Service seguro
 import com.example.vagas.service.PerfilService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.vagas.dto.PerfilDTO;
+import com.example.vagas.dto.PerfilUpdateDTO;
+
+// Importações do Spring e Lombok
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid; 
 
-// REMOVIDO: import java.util.UUID; // Não está mais em uso.
-
+// O PerfilService é responsável por toda a lógica, incluindo a segurança.
 @RestController
 @RequestMapping("/api/perfil")
+@RequiredArgsConstructor // Uso de Lombok para injeção de dependência via construtor (melhor prática)
 public class PerfilController {
 
-    @Autowired
-    private PerfilService perfilService;
+    // Injeção de dependência via construtor
+    private final PerfilService perfilService;
+
 
     /**
      * Obtém o perfil do usuário atualmente autenticado.
-     * Rota: GET /api/perfil/me
+     * O ID do usuário é extraído do token pelo SecurityUtils (dentro do Service).
+     * Rota: GET /api/perfil
+     * Retorna: 200 OK e PerfilDTO ou 404 NOT FOUND (tratado pelo Service/Exception Handler)
      */
-    @GetMapping("/me")
-    public ResponseEntity<Perfil> getPerfilLogado() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-
-        return perfilService.buscarPerfilPorUsername(username)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping
+    public ResponseEntity<PerfilDTO> getMeuPerfil() {
+        // Toda a lógica de segurança e busca é delegada ao Service.
+        PerfilDTO perfil = perfilService.getPerfilDoUsuarioLogado();
+        
+        // Se o Service não lançar exceção (ou se for tratada por um @ControllerAdvice),
+        // o retorno será 200 OK.
+        return ResponseEntity.ok(perfil); 
     }
 
     /**
-     * Atualiza o perfil do usuário.
+     * Atualiza o perfil do usuário logado.
      * Rota: PUT /api/perfil
+     * Retorna: 200 OK e PerfilDTO atualizado.
      */
     @PutMapping
-    public ResponseEntity<Perfil> updatePerfil(@RequestBody Perfil perfilDetails) {
-      
-        Perfil updatedPerfil = perfilService.atualizarPerfil(perfilDetails);
+    public ResponseEntity<PerfilDTO> updateMeuPerfil(@Valid @RequestBody PerfilUpdateDTO updateDTO) {
+        // O Service aplica as regras de negócio, a segurança e a atualização.
+        PerfilDTO updatedPerfil = perfilService.updatePerfilDoUsuarioLogado(updateDTO);
+        
         return ResponseEntity.ok(updatedPerfil);
     }
+    
+    /*
+    // Opcional: Se quiser adicionar o DELETE para deletar a conta:
+    @DeleteMapping
+    public ResponseEntity<Void> deleteMinhaConta() {
+        // Implementar perfilService.deletePerfilDoUsuarioLogado();
+        return ResponseEntity.noContent().build(); // Retorna 204 No Content
+    }
+    */
 }

@@ -1,10 +1,9 @@
 package com.example.vagas.security; 
 
-import com.example.vagas.AppProperties; // Importe a classe AppProperties
+import com.example.vagas.AppProperties; 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-// REMOVIDO: import org.springframework.beans.factory.annotation.Value; // Não precisamos mais do @Value
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -32,7 +31,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String token = jwtService.generateToken(username);
         
         // CORREÇÃO: Pega a URI de redirecionamento do seu AppProperties
-        String redirectUri = appProperties.getAuth().getAuthorizedRedirectUri();
+        String redirectUri = appProperties.getAuthorizedRedirectUri();
 
         String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
                 .queryParam("token", token) 

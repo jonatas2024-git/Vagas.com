@@ -1,58 +1,80 @@
+// src/main/java/com/example/vagas/controller/EmpresaController.java
+
 package com.example.vagas.controller;
 
-import com.example.vagas.model.Empresa;
 import com.example.vagas.service.EmpresaService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.vagas.dto.EmpresaDTO;
+import com.example.vagas.dto.EmpresaCreateUpdateDTO;
+import com.example.vagas.exception.ResourceNotFoundException; 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
+import jakarta.validation.Valid;
+import java.util.List; // O List agora será usado nos métodos GET
 
 @RestController
 @RequestMapping("/api/empresas")
+@RequiredArgsConstructor 
 public class EmpresaController {
 
-    @Autowired
-    private EmpresaService empresaService;
+    private final EmpresaService empresaService; 
 
-    @PostMapping
-    public ResponseEntity<Empresa> createEmpresa(@RequestBody Empresa empresa) {
-        Empresa newEmpresa = empresaService.createEmpresa(empresa);
-        return new ResponseEntity<>(newEmpresa, HttpStatus.CREATED);
+    @PostMapping // Criação de Empresa - Apenas para USUÁRIOS LOGADOS
+    public ResponseEntity<EmpresaDTO> createEmpresa(@Valid @RequestBody EmpresaCreateUpdateDTO dto) {
+        EmpresaDTO newEmpresa = empresaService.createEmpresa(dto);
+        return new ResponseEntity<>(newEmpresa, HttpStatus.CREATED); // Retorna 201 Created
     }
 
-    // Todas as empresas - Sugestão
+    /**
+     * Rota: GET /api/empresas - Lista todas as empresas (Acesso público)
+     * ATENÇÃO: Se a lista for muito grande, considere adicionar paginação aqui.
+     */
     @GetMapping
-    public ResponseEntity<List<Empresa>> getAllEmpresas() {
-        List<Empresa> todasEmpresas = empresaService.listarEmpresas();
-        return new ResponseEntity<>(todasEmpresas, HttpStatus.OK);
+    public ResponseEntity<List<EmpresaDTO>> getAllEmpresas() {
+        // O Service deve implementar findAll e mapear o resultado para List<EmpresaDTO>
+        List<EmpresaDTO> empresas = empresaService.findAllEmpresas(); 
+        return ResponseEntity.ok(empresas); // Retorna 200 OK
     }
-
-    // Empresa pelo id - Sugestão
+    
+    /**
+     * Rota: GET /api/empresas/{id} - Busca empresa por ID (Acesso público)
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<Empresa> getEmpresaById(@PathVariable Long id) {
-        return empresaService.buscarEmpresaPorId(id)
-                .map(empresa -> new ResponseEntity<>(empresa, HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Empresa> updateEmpresa(@PathVariable Long id, @RequestBody Empresa empresa) {
+    public ResponseEntity<EmpresaDTO> getEmpresaById(@PathVariable Long id) {
         try {
-            Empresa updateEmpresa = empresaService.atualizarEmpresa(id, empresa);
-            return new ResponseEntity<>(updateEmpresa, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            // O Service deve implementar a busca e o mapeamento
+            EmpresaDTO empresa = empresaService.findEmpresaById(id); 
+            return ResponseEntity.ok(empresa);
+        } catch (ResourceNotFoundException e) {
+            // Usa a exceção para retornar 404 Not Found
+            return ResponseEntity.notFound().build();
         }
     }
 
-    @DeleteMapping("/{id}")
+    @PutMapping("/{id}") // Atualização - Apenas para o DONO
+    public ResponseEntity<EmpresaDTO> updateEmpresa(
+            @PathVariable Long id, 
+            @Valid @RequestBody EmpresaCreateUpdateDTO dto) {
+        try {
+            EmpresaDTO updatedEmpresa = empresaService.updateEmpresa(id, dto);
+            return ResponseEntity.ok(updatedEmpresa);
+        } catch (SecurityException e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN); // 403 Proibido (Não é o dono)
+        } catch (ResourceNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 404 Não encontrado
+        }
+    }
+
+    @DeleteMapping("/{id}") // Deleção - Apenas para o DONO
     public ResponseEntity<Void> deleteEmpresa(@PathVariable Long id) {
         try {
             empresaService.deletarEmpresaPorId(id);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.noContent().build(); // 204 No Content
+        } catch (SecurityException e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN); // 403 Proibido (Não é o dono)
+        } catch (ResourceNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 404 Não encontrado
         }
     }
 }
