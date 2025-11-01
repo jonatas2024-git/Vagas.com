@@ -1,37 +1,24 @@
-HELP.md
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
+# Diretórios de Build e Saída
+/target/
+/bin/
+/out/
+.env
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
+# Dependências
+/lib/
+/tmp/
+/classes/
 
-### IntelliJ IDEA ###
-.idea
-*.iws
+# Arquivos de IDE (IntelliJ, Eclipse, VS Code)
+.idea/
 *.iml
+*.iws
 *.ipr
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### VS Code ###
+.settings/
+.classpath
+.project
 .vscode/
+
+# Gradle
+.gradle/
+build/

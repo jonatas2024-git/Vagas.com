@@ -31,38 +31,41 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-           .csrf(csrf -> csrf.disable())
+            // 🔒 Desabilita CSRF para APIs REST
+            .csrf(csrf -> csrf.disable())
+
+            // ⚠️ IMPORTANTE: SessionCreationPolicy deve ser IF_REQUIRED para permitir OAuth2 redirection
             .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) 
-           )
-           .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll() 
-                .requestMatchers("/api/vagas", "/api/vagas/**").permitAll()
-                .requestMatchers("/api/empresas", "/api/empresas/**").permitAll() 
-                // **ADICIONAL**: Permitindo acesso para endpoints do Swagger/OpenAPI
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+            )
+
+            // 🔐 Configuração das permissões
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/vagas/**").permitAll()
+                .requestMatchers("/api/empresas/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                // **ADICIONAL**: Permitindo endpoints de login social
-                .requestMatchers("/oauth2/authorization/**", "/login/oauth2/code/*").permitAll() 
+                .requestMatchers("/oauth2/authorization/**", "/login/oauth2/code/*").permitAll()
+                .requestMatchers("/oauth2/redirect").permitAll()
                 .anyRequest().authenticated()
             )
+
+            // 🧠 Segurança de cabeçalhos
             .headers(headers -> headers
-                .xssProtection(xss -> {}) 
-                .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'")) 
+                .xssProtection(xss -> {})
+                .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'"))
                 .frameOptions(frameOptions -> frameOptions.deny())
-                .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000)) 
+                .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
             )
+
+            // ⚙️ Configuração OAuth2
             .oauth2Login(oauth2 -> oauth2
-                // **CORREÇÃO**: Garante que o Spring Security aceite a URI de retorno do Google
-                .redirectionEndpoint(redirection -> redirection
-                    .baseUri("/login/oauth2/code/*")
-                )
-                .userInfoEndpoint(userInfo -> userInfo
-                    .userService(customOAuth2UserService)
-                )
-                // Usando o Handler customizado para redirecionar ao Frontend com o token
-                .successHandler(oauth2AuthenticationSuccessHandler) 
+                .redirectionEndpoint(redirection -> redirection.baseUri("/login/oauth2/code/*"))
+                .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                .successHandler(oauth2AuthenticationSuccessHandler) // ✅ Handler que redireciona ao Front-end
             );
 
+        // 🔄 JWT Filter continua ativo
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
