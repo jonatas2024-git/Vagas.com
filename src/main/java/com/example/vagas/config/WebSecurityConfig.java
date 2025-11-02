@@ -31,15 +31,15 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // 🔒 Desabilita CSRF para APIs REST
+            // Desabilita CSRF para APIs REST
             .csrf(csrf -> csrf.disable())
 
-            // ⚠️ IMPORTANTE: SessionCreationPolicy deve ser IF_REQUIRED para permitir OAuth2 redirection
+            // IMPORTANTE: SessionCreationPolicy deve ser IF_REQUIRED para permitir OAuth2 redirection
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             )
 
-            // 🔐 Configuração das permissões
+            // Configuração das permissões
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/vagas/**").permitAll()
@@ -50,7 +50,7 @@ public class WebSecurityConfig {
                 .anyRequest().authenticated()
             )
 
-            // 🧠 Segurança de cabeçalhos
+            // Segurança de cabeçalhos
             .headers(headers -> headers
                 .xssProtection(xss -> {})
                 .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'"))
@@ -58,10 +58,11 @@ public class WebSecurityConfig {
                 .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
             )
 
-            // ⚙️ Configuração OAuth2
+            // Configuração OAuth2
             .oauth2Login(oauth2 -> oauth2
                 .redirectionEndpoint(redirection -> redirection.baseUri("/login/oauth2/code/*"))
                 .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                //.defaultSuccessUrl("/", true) --> Linha removida.
                 .successHandler(oauth2AuthenticationSuccessHandler) // ✅ Handler que redireciona ao Front-end
             );
 

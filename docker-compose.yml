@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # Banco de Dados PostgreSQL
   database:
     image: postgres:15-alpine
     container_name: vagas_postgres
@@ -13,21 +12,33 @@ services:
       POSTGRES_DB: ${DB_NAME:-vagasdb}
     volumes:
       - vagas-data:/var/lib/postgresql/data
+    env_file:
+      - .env  # <-- adicione aqui, dentro do serviço
 
-  # Aplicação Backend (Spring Boot)
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     container_name: vagas_backend
     ports:
       - "8080:8080"
-    env_file:
-      - .env
     depends_on:
       - database
+    env_file:
+      - .env  # <-- e também aqui
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+
+      JWT_SECRET: ${JWT_SECRET}
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      FRONTEND_REDIRECT_URI: ${FRONTEND_REDIRECT_URI}
+
     restart: always
 
-# Volume persistente do banco
 volumes:
   vagas-data:
