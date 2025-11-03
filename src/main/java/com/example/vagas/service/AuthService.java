@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.Optional;
 import java.util.UUID; 
 import java.time.LocalDateTime;
+import org.springframework.security.authentication.BadCredentialsException; 
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +28,8 @@ public class AuthService {
     private final JwtService jwtService;
     private final EmailService emailService;
     private final PasswordResetTokenRepository tokenRepository;
+    
+    private final TfaService tfaService; 
 
     @Transactional
     public User registerUser(User user) {
@@ -47,26 +50,75 @@ public class AuthService {
         return newUser;
     }
     
+    // =========================================================================
+    // MODIFICADO: LOGIN INICIAL (Passo 1 - Checagem de 2FA)
+    // =========================================================================
     public Optional<AuthResponse> authenticateUser(String username, String password) {
-        Optional<User> userOptional = userRepository.findByUsername(username);
+        // CORRIGIDO: O método agora existe no UserRepository
+        Optional<User> userOptional = userRepository.findByUsernameOrEmail(username, username); 
 
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             if (passwordEncoder.matches(password, user.getPassword())) {
                 
+                // 1. CHECAGEM DE 2FA
+                if (user.isTfaEnabled()) {
+                    return Optional.of(AuthResponse.builder()
+                            .username(user.getUsername())
+                            .userId(user.getId())
+                            .isTfaRequired(true)
+                            .isSecondStepRequired(true)
+                            .token(null)
+                            .build());
+                }
+
+                // 2. 2FA desativado
                 String token = jwtService.generateToken(user.getUsername()); 
 
-                AuthResponse response = new AuthResponse();
-                response.setToken(token);
-                response.setUsername(user.getUsername());
+                AuthResponse response = AuthResponse.builder()
+                        .token(token)
+                        .username(user.getUsername())
+                        .userId(user.getId())
+                        .isTfaRequired(false)
+                        .isSecondStepRequired(false)
+                        .build();
 
                 return Optional.of(response);
             }
         }
         
-        return Optional.empty(); 
+        return Optional.empty();
     }
     
+    // =========================================================================
+    // NOVO: LOGIN 2FA (Passo 2 - Validação do OTP)
+    // =========================================================================
+    public AuthResponse authenticateTfa(String username, String otpCode) {
+        // CORRIGIDO: O método agora existe no UserRepository
+        User user = userRepository.findByUsernameOrEmail(username, username)
+                .orElseThrow(() -> new BadCredentialsException("Usuário não encontrado."));
+
+        if (!user.isTfaEnabled()) {
+             throw new IllegalStateException("2FA não está ativo para este usuário.");
+        }
+        
+        if (!tfaService.isOtpValid(user.getTfaSecret(), otpCode)) {
+            throw new BadCredentialsException("Código OTP inválido.");
+        }
+
+        String token = jwtService.generateToken(user.getUsername());
+        return AuthResponse.builder()
+                .token(token)
+                .username(user.getUsername())
+                .userId(user.getId())
+                .isTfaRequired(true)
+                .isSecondStepRequired(false)
+                .build();
+    }
+    
+    // =========================================================================
+    // RESTAURADO: MÉTODOS DE RECUPERAÇÃO DE SENHA (Resolve os avisos de não uso)
+    // =========================================================================
     @Transactional
     public void requestPasswordReset(String email) {
         User user = userRepository.findByEmail(email)
@@ -81,7 +133,7 @@ public class AuthService {
         String resetLink = "http://sua-url-frontend/reset-password?token=" + tokenValue;
 
         try {
-            // Este método será implementado no EmailService:
+            // Este método usa o emailService
             emailService.sendPasswordResetEmail(user.getEmail(), resetLink);
         } catch (Exception e) {
             System.err.println("Falha ao enviar e-mail para " + user.getEmail() + ": " + e.getMessage());
@@ -90,6 +142,7 @@ public class AuthService {
 
     @Transactional
     public void resetPassword(String token, String newPassword) throws Exception {
+        // Este método usa o tokenRepository
         PasswordResetToken resetToken = tokenRepository.findByToken(token)
                 .orElseThrow(() -> new Exception("Token inválido ou expirado."));
 

@@ -13,4 +13,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     
     // CORREÇÃO: ADICIONAR MÉTODO findByEmail
     Optional<User> findByEmail(String email);
+    
+    // NOVO: Resolve o erro no AuthService, permitindo login por username OU email
+    Optional<User> findByUsernameOrEmail(String username, String email);
 }

@@ -13,20 +13,31 @@ public class User {
     @Column(name = "username", nullable = false, unique = true)
     private String username;
 
-    // CORREÇÃO: ADICIONAR CAMPO NAME
     @Column(name = "name")
     private String name;
 
-    // CORREÇÃO: ADICIONAR CAMPO EMAIL
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @Column(name = "password", nullable = false)
     private String password;
 
+    // =========================================================================
+    // NOVO: CAMPOS PARA 2FA (Two-Factor Authentication)
+    // =========================================================================
+    @Column(name = "tfa_secret")
+    private String tfaSecret;
+
+    @Column(name = "is_tfa_enabled", nullable = false)
+    private boolean isTfaEnabled = false; // Começa desabilitado
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Perfil perfil;
 
+    // =========================================================================
+    // Getters e Setters Existentes
+    // =========================================================================
+    
     public UUID getId() {
         return id;
     }
@@ -43,22 +54,18 @@ public class User {
         this.username = username;
     }
 
-    // NOVO: GETTER PARA NAME
     public String getName() {
         return name;
     }
     
-    // NOVO: SETTER PARA NAME (Resolve o erro no CustomOAuth2UserService)
     public void setName(String name) {
         this.name = name;
     }
 
-    // CORREÇÃO: ADICIONAR GETTER PARA EMAIL
     public String getEmail() {
         return email;
     }
 
-    // CORREÇÃO: ADICIONAR SETTER PARA EMAIL
     public void setEmail(String email) {
         this.email = email;
     }
@@ -77,5 +84,25 @@ public class User {
     
     public void setPerfil(Perfil perfil) {
         this.perfil = perfil;
+    }
+
+    // =========================================================================
+    // NOVO: Getters e Setters para 2FA
+    // =========================================================================
+
+    public String getTfaSecret() {
+        return tfaSecret;
+    }
+
+    public void setTfaSecret(String tfaSecret) {
+        this.tfaSecret = tfaSecret;
+    }
+
+    public boolean isTfaEnabled() {
+        return isTfaEnabled;
+    }
+
+    public void setTfaEnabled(boolean isTfaEnabled) {
+        this.isTfaEnabled = isTfaEnabled;
     }
 }

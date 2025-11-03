@@ -2,60 +2,89 @@ package com.example.vagas.controller;
 
 // Importações para a nova lógica baseada em DTOs e Service seguro
 import com.example.vagas.service.PerfilService;
+// NOVO: Import do SearchHistoryService
+import com.example.vagas.service.SearchHistoryService; 
 import com.example.vagas.dto.PerfilDTO;
 import com.example.vagas.dto.PerfilUpdateDTO;
+// NOVO: Import da Entidade SearchHistory
+import com.example.vagas.model.SearchHistory; 
 
 // Importações do Spring e Lombok
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid; 
+import java.util.List; // NOVO: Para retornar a lista de histórico
+
+// Importações do Swagger/OpenAPI 3
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+
 
 // O PerfilService é responsável por toda a lógica, incluindo a segurança.
 @RestController
 @RequestMapping("/api/perfil")
-@RequiredArgsConstructor // Uso de Lombok para injeção de dependência via construtor (melhor prática)
+@RequiredArgsConstructor 
+@Tag(name = "Perfil", description = "Endpoints para visualização e atualização do perfil do usuário logado. Requer JWT em todos os endpoints.")
+@SecurityRequirement(name = "bearerAuth") // Aplica JWT globalmente a este Controller
 public class PerfilController {
 
-    // Injeção de dependência via construtor
     private final PerfilService perfilService;
+    // NOVO: Injeção do serviço de histórico de buscas
+    private final SearchHistoryService searchHistoryService; 
 
 
-    /**
-     * Obtém o perfil do usuário atualmente autenticado.
-     * O ID do usuário é extraído do token pelo SecurityUtils (dentro do Service).
-     * Rota: GET /api/perfil
-     * Retorna: 200 OK e PerfilDTO ou 404 NOT FOUND (tratado pelo Service/Exception Handler)
-     */
+    @Operation(summary = "Obter Perfil",
+               description = "Retorna os dados do perfil do usuário atualmente autenticado.")
+    @ApiResponse(responseCode = "200", description = "Perfil retornado com sucesso.")
+    @ApiResponse(responseCode = "404", description = "Usuário não encontrado.")
+    @ApiResponse(responseCode = "401", description = "Não autenticado.")
     @GetMapping
     public ResponseEntity<PerfilDTO> getMeuPerfil() {
-        // Toda a lógica de segurança e busca é delegada ao Service.
         PerfilDTO perfil = perfilService.getPerfilDoUsuarioLogado();
-        
-        // Se o Service não lançar exceção (ou se for tratada por um @ControllerAdvice),
-        // o retorno será 200 OK.
         return ResponseEntity.ok(perfil); 
     }
 
-    /**
-     * Atualiza o perfil do usuário logado.
-     * Rota: PUT /api/perfil
-     * Retorna: 200 OK e PerfilDTO atualizado.
-     */
+    @Operation(summary = "Atualizar Perfil",
+               description = "Atualiza os dados do perfil do usuário logado (nome, email, etc.).")
+    @RequestBody(content = @Content(schema = @Schema(implementation = PerfilUpdateDTO.class)), required = true, description = "Campos a serem atualizados.")
+    @ApiResponse(responseCode = "200", description = "Perfil atualizado com sucesso.")
+    @ApiResponse(responseCode = "400", description = "Dados de atualização inválidos (ex: email já em uso).")
+    @ApiResponse(responseCode = "401", description = "Não autenticado.")
     @PutMapping
     public ResponseEntity<PerfilDTO> updateMeuPerfil(@Valid @RequestBody PerfilUpdateDTO updateDTO) {
-        // O Service aplica as regras de negócio, a segurança e a atualização.
         PerfilDTO updatedPerfil = perfilService.updatePerfilDoUsuarioLogado(updateDTO);
-        
         return ResponseEntity.ok(updatedPerfil);
     }
     
+    // =========================================================================
+    // NOVO: HISTÓRICO DE BUSCAS (Item 13)
+    // =========================================================================
+    @Operation(summary = "Obter Histórico de Buscas",
+               description = "Retorna a lista de termos e filtros que o usuário logado buscou recentemente.")
+    @ApiResponse(responseCode = "200", description = "Lista de histórico de buscas retornada com sucesso.")
+    @ApiResponse(responseCode = "401", description = "Não autenticado.")
+    @GetMapping("/search-history")
+    public ResponseEntity<List<SearchHistory>> getMySearchHistory() {
+        // O serviço garante que apenas o histórico do usuário logado seja retornado
+        List<SearchHistory> history = searchHistoryService.getMySearchHistory();
+        return ResponseEntity.ok(history);
+    }
+    
     /*
-    // Opcional: Se quiser adicionar o DELETE para deletar a conta:
+    // Opcional: Documentação para o DELETE
+    @Operation(summary = "Deletar Conta (Opcional)",
+               description = "Deleta a conta do usuário logado e todas as suas entidades associadas.")
+    @ApiResponse(responseCode = "204", description = "Conta deletada com sucesso (No Content).")
     @DeleteMapping
     public ResponseEntity<Void> deleteMinhaConta() {
-        // Implementar perfilService.deletePerfilDoUsuarioLogado();
-        return ResponseEntity.noContent().build(); // Retorna 204 No Content
+        // perfilService.deletePerfilDoUsuarioLogado();
+        return ResponseEntity.noContent().build(); 
     }
     */
 }
