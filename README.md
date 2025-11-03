@@ -1,65 +1,147 @@
-# Projeto de Conclusão - Orientações para desenvolvimento do Back-end.
+# 🎓 Projeto de Conclusão — Orientações para Desenvolvimento do Back-end
 
 
-A seguir vocês encontrarão um conjunto de requisitos funcionais e não funcionais organizados de forma clara e objetiva para orientar o desenvolvimento do Projeto de Conclusão da nossa formação, no que diz respeito ao Back-end.
+Bem-vindo(a) ao repositório do **Projeto de Conclusão**.  
 
-Nem todos os grupos verão nesses requisitos sentido, devido à natureza do seu projeto. Portanto, cada equipe deverá entrar em contato comigo para adaptar estes itens ao escopo do trabalho e escolher as ferramentas mais adequadas.
+Este documento reúne as **orientações, requisitos e boas práticas** para o desenvolvimento da camada **Back-end**, servindo como guia para estruturação, planejamento e documentação do sistema.
 
-Usem este material como referência para estruturar, planejar e documentar suas entregas.
+---
 
-Requisitos Funcionais:
+## Visão Geral
 
-* Autenticação e Segurança
+O objetivo deste projeto é demonstrar a capacidade de planejar, desenvolver e documentar um **sistema Back-end completo**, seguro, escalável e aderente às boas práticas de engenharia de software.
 
-  > Login social (OAuth2) e cadastro próprio
-  > Emissão de token JWT com expiração e refresh
-  > Fluxo de recuperação de senha por e-mail (link único, validade limitada)
-  > 2FA opcional via OTP para ações críticas
+Cada equipe deverá adaptar os requisitos abaixo ao **escopo do seu projeto**, escolhendo as tecnologias e abordagens mais adequadas, em alinhamento com o(a) orientador(a).
 
-* Gestão de Usuário
-  > Entidade “Perfil” com dados pessoais (nome, e-mail) e preferências (tema, notificações)
-  > Consulta e edição de perfil e configurações
+---
 
-* CRUD de Entidades
-  > Criação, leitura, atualização e exclusão para todas as entidades de domínio
-  > Filtros dinâmicos e paginação em listagens
+## Requisitos Funcionais
 
-* Detalhes de Item
-  > Consulta detalhada incluindo relacionamentos e metadados
-  > Cálculo de métricas simples (contagem, soma, média)
+### Autenticação e Segurança
 
-* Pesquisa Avançada
-  > Busca full-text com filtros em múltiplos campos
-  > Registro de histórico de buscas para sugestões e análise
-  > Requisitos Não Funcionais:
+- Login social (**OAuth2**) e cadastro próprio  
+- Emissão de **token JWT** com expiração e refresh  
+- Fluxo de **recuperação de senha por e-mail** (link único, validade limitada)  
+- **Autenticação de dois fatores (2FA)** opcional via OTP para ações críticas  
 
-* Segurança
-  > Proteção de APIs via JWT e HTTPS
-  > Mitigação de SQL Injection, XSS e CSRF
-  > Cabeçalhos de segurança (CSP, HSTS, X-Frame-Options)
+### Gestão de Usuário
 
-* Performance
-  > Cache distribuído (Redis ou equivalente)
-  > Lazy loading, índices adequados e otimização de queries
+- Entidade **Perfil** com dados pessoais (nome, e-mail) e preferências (tema, notificações)  
+- Endpoints para **consulta e edição de perfil** e configurações do usuário  
 
-* Escalabilidade
-  > Arquitetura modular ou microsserviços
-  > Componentes auxiliares em linguagens diversas, conforme necessidade
+### CRUD de Entidades
 
-* Manutenibilidade e Deploy
-  > Containerização com Docker
-  > Pipeline de CI/CD (GitHub Actions, GitLab CI ou Jenkins)
+- Criação, leitura, atualização e exclusão (**CRUD**) para todas as entidades de domínio  
+- **Filtros dinâmicos e paginação** nas listagens  
+- Tratamento de exceções padronizado (404, 400, 403, etc.)
 
-* Documentação
-  > Guia de configuração do ambiente local
-  > Exemplos de chamadas de API (Postman/Insomnia)
-  > Diagramas de modelo de dados (ER) e fluxos principais
+### Detalhes de Item
 
-Tecnologias (sugestões; a definir por projeto):
-  > Back-end: Java (Spring Boot ou similar)
-  > Componentes auxiliares: serviços em outras linguagens conforme necessidade
-  > Banco de Dados: MySQL, PostgreSQL (relacional) ou MongoDB (NoSQL)
-  > Cache: Redis (cache distribuído)
-  > Containerização: Docker
-  > CI/CD: GitHub Actions, GitLab CI ou Jenkins
-Documentação de API: Swagger / OpenAPI
+- Consulta detalhada de entidades, incluindo **relacionamentos e metadados**  
+- Cálculo de **métricas simples** (contagem, soma, média, etc.)
+
+### Pesquisa Avançada
+
+- **Busca full-text** com filtros em múltiplos campos  
+- Registro de **histórico de buscas** para sugestões e análise  
+
+---
+
+## Requisitos Não Funcionais
+
+###  Segurança
+
+- Proteção de APIs via **JWT e HTTPS**  
+- Mitigação de **SQL Injection**, **XSS** e **CSRF**  
+- Uso de **cabeçalhos de segurança** (CSP, HSTS, X-Frame-Options)
+
+### Performance
+
+- Uso de **cache distribuído** (Redis ou equivalente)  
+- **Lazy loading**, índices adequados e queries otimizadas  
+
+### Escalabilidade
+
+- **Arquitetura modular ou microsserviços**  
+- Componentes auxiliares em outras linguagens, conforme necessidade  
+
+###  Manutenibilidade e Deploy
+
+- **Containerização com Docker**  
+- **Pipeline CI/CD** (GitHub Actions, GitLab CI ou Jenkins)  
+
+# Tecnologias Recomendadas
+
+| Categoria | Ferramentas Sugeridas |
+|------------|----------------------|
+| **Back-end** | Java + Spring Boot |
+| **Banco de Dados** | MySQL / PostgreSQL / MongoDB |
+| **Cache** | Redis |
+| **Documentação de API** | Swagger / OpenAPI 3 |
+| **Containerização** | Docker |
+| **CI/CD** | GitHub Actions / GitLab CI / Jenkins |
+| **Testes** | JUnit, Mockito, Testcontainers |
+| **Autenticação** | Spring Security + OAuth2 / JWT |
+
+##  Padrões e Boas Práticas
+
+- Seguir **Clean Architecture / Hexagonal Architecture** quando possível  
+- Nomear pacotes por domínio (`controller`, `service`, `repository`, `model`, `dto`, `exception`)  
+- Adotar **DTOs** para comunicação com o front-end  
+- Utilizar **Lombok** para reduzir boilerplate (`@Getter`, `@Setter`, `@Builder`, etc.)  
+- Validar inputs com **Jakarta Validation** (`@NotNull`, `@Email`, etc.)  
+- Tratar erros via **ControllerAdvice** e respostas padronizadas  
+
+## 📚 Documentação e Entregáveis
+
+Cada equipe deve entregar:
+
+1. **Guia de configuração do ambiente local**
+   - Pré-requisitos (Java, Docker, banco de dados, etc.)
+   - Passos para rodar o projeto (`docker-compose up`)
+
+2. **Documentação da API**
+   - Endpoints descritos via **Swagger / OpenAPI**
+   - Exemplos de requisições e respostas (Postman ou Insomnia)
+
+3. **Diagramas**
+   - Diagrama de **Entidade-Relacionamento (ER)**  
+   - Diagramas de **fluxo principais** (autenticação, CRUD, busca)
+
+4. **Testes**
+   - Cobertura mínima recomendada: **>70%**
+   - Testes unitários e de integração automatizados
+
+---
+
+## ▶Como Executar o Projeto
+
+```bash
+# Clonar o repositório
+git clone https://github.com/seu-usuario/nome-do-projeto.git
+
+# Acessar o diretório
+cd nome-do-projeto
+
+# Rodar com Docker
+docker-compose up --build
+
+Após inicializar, a API estará disponível em:
+
+http://localhost:8080
+
+
+Documentação Swagger:
+
+http://localhost:8080/swagger-ui.html
+
+
+👥 Autores e Contato
+
+Equipe de Desenvolvimento
+
+  > Nome do(a) Aluno(a) 1 — [email@exemplo.com
+  > Nome do(a) Aluno(a) 2 — [email@exemplo.com
+  > Nome do(a) Aluno(a) 3 — [email@exemplo.com
+
+Orientador(a): Nome do Professor(a)

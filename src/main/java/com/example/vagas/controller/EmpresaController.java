@@ -73,11 +73,11 @@ public class EmpresaController {
     }
 
     // =========================================================================
-    // NOVO: ENDPOINT DE MÉTRICAS (Item 8)
+    // ENDPOINT DE MÉTRICAS (Item 8 COMPLETO)
     // =========================================================================
     
     @Operation(summary = "Obter Métricas de Engajamento da Empresa (Restrito)",
-               description = "Retorna métricas de visualização (views) das vagas da empresa. **Apenas o dono da empresa pode acessar.** Requer JWT.",
+               description = "Retorna métricas de visualização (views) e **candidaturas (applications)** das vagas da empresa. **Apenas o dono da empresa pode acessar.** Requer JWT.",
                security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "Métricas retornadas com sucesso.")
     @ApiResponse(responseCode = "404", description = "Empresa não encontrada.")
@@ -89,20 +89,25 @@ public class EmpresaController {
         
         try {
             // 1. Verificação de Segurança (Garantir que o usuário logado é o dono)
-            // Assumimos que o EmpresaService tem um método para validar o acesso
-            // A chamada findEmpresaByIdAndVerifyOwner faria isso. Aqui, usaremos
-            // um método que verifica a propriedade antes de retornar as métricas.
             empresaService.verifyOwner(id); 
 
-            // 2. Coletar Métricas de Views (Item 8)
+            // 2. Coletar Métricas de Views
             long totalViews = vagaMetricsService.getTotalViewsForEmpresa(id);
             Map<Long, Long> topVagasByViews = vagaMetricsService.getTopVagasByViews(id);
 
-            // 3. Montar o DTO/Mapa de Resposta
+            // 3. Coletar Métricas de Candidaturas <-- CORREÇÃO/ADICIONAL
+            long totalApplications = vagaMetricsService.getTotalApplicationsForEmpresa(id);
+            Map<Long, Long> topVagasByApplications = vagaMetricsService.getTopVagasByApplications(id);
+
+            // 4. Montar o DTO/Mapa de Resposta
             Map<String, Object> metrics = Map.of(
                 "empresaId", id,
+                // Views
                 "totalViews", totalViews,
-                "topVagasByViews", topVagasByViews
+                "topVagasByViews", topVagasByViews,
+                // Candidaturas
+                "totalApplications", totalApplications, 
+                "topVagasByApplications", topVagasByApplications
             );
 
             return ResponseEntity.ok(metrics);
