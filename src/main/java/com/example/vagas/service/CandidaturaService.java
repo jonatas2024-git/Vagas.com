@@ -1,6 +1,7 @@
 package com.example.vagas.service;
 
 import com.example.vagas.model.Candidatura;
+import com.example.vagas.model.Empresa; // NOVO: Import da Entidade Empresa
 import com.example.vagas.model.Vaga;
 import com.example.vagas.model.User;
 import com.example.vagas.repository.CandidaturaRepository;
@@ -10,7 +11,7 @@ import com.example.vagas.security.SecurityUtils;
 import com.example.vagas.dto.CandidaturaDTO;
 import com.example.vagas.dto.CandidaturaStatusUpdateDTO;
 import com.example.vagas.exception.ResourceNotFoundException;
-import com.example.vagas.exception.DuplicateEntryException; // Necessário
+import com.example.vagas.exception.DuplicateEntryException; 
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,14 +29,14 @@ public class CandidaturaService {
     private final VagaRepository vagaRepository;
     private final UserRepository userRepository;
     private final SecurityUtils securityUtils;
-    private final EmpresaService empresaService; // Para verificar propriedade da Vaga
+    private final EmpresaService empresaService; 
 
     // =========================================================================
     // 1. AÇÕES DO CANDIDATO
     // =========================================================================
 
     @Transactional
-    public CandidaturaDTO createCandidatura(Long vagaId) {
+    public CandidaturaDTO createCandidatura(UUID vagaId) {
         // 1. Obter o usuário logado (candidato)
         UUID currentUserId = securityUtils.getCurrentUserId();
         User candidato = userRepository.findById(currentUserId)
@@ -72,11 +73,10 @@ public class CandidaturaService {
     
     /**
      * Lista todas as candidaturas para uma vaga específica.
-     * Requer verificação de propriedade.
      */
-    public List<CandidaturaDTO> getCandidaturasByVagaId(Long vagaId) {
+    public List<CandidaturaDTO> getCandidaturasByVagaId(UUID vagaId) {
         // 1. Verifica se a empresa existe E se o usuário logado é o dono da empresa da vaga
-        verifyVagaOwner(vagaId); 
+        verifyVagaOwner(vagaId);
 
         // 2. Retorna a lista
         return candidaturaRepository.findByVagaId(vagaId).stream()
@@ -86,7 +86,7 @@ public class CandidaturaService {
 
     /**
      * Atualiza o status de uma candidatura.
-     * Requer verificação de propriedade da vaga.
+     * Candidatura ID é Long.
      */
     @Transactional
     public CandidaturaDTO updateCandidaturaStatus(Long candidaturaId, CandidaturaStatusUpdateDTO dto) {
@@ -109,24 +109,31 @@ public class CandidaturaService {
     /**
      * Verifica se o usuário logado é o dono da empresa dona da vaga.
      */
-    private void verifyVagaOwner(Long vagaId) {
+    private void verifyVagaOwner(UUID vagaId) {
         Vaga vaga = vagaRepository.findById(vagaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Vaga não encontrada."));
         
-        Long empresaId = vaga.getEmpresa().getId();
+        // Empresa ID é Long, OK.
+        Long empresaId = vaga.getEmpresa().getId(); 
         // Reutiliza a lógica de segurança do EmpresaService
         empresaService.verifyOwner(empresaId);
     }
 
     private CandidaturaDTO mapToDTO(Candidatura c) {
+        // CORRIGIDO: Referência explícita ao objeto Empresa
+        Empresa empresa = c.getVaga().getEmpresa(); 
+        
         return CandidaturaDTO.builder()
-                .id(c.getId())
-                .vagaId(c.getVaga().getId())
+                .id(c.getId()) // Long, OK
+                .vagaId(c.getVaga().getId()) // UUID, OK
                 .vagaTitulo(c.getVaga().getTitulo())
-                .empresaId(c.getVaga().getEmpresa().getId())
-                .empresaNome(c.getVaga().getEmpresa().getNomeFantasia())
-                .candidatoId(c.getCandidato().getId())
-                .candidatoNome(c.getCandidato().getUsername()) // Assumindo que você usa username ou nome
+                
+                // CORRIGIDO: Usa ID e Nome da Entidade Empresa (Long ID)
+                .empresaId(empresa.getId()) 
+                .empresaNome(empresa.getNomeFantasia()) 
+                
+                .candidatoId(c.getCandidato().getId()) // UUID, OK
+                .candidatoNome(c.getCandidato().getUsername()) 
                 .status(c.getStatus())
                 .dataCandidatura(c.getDataCandidatura())
                 .build();

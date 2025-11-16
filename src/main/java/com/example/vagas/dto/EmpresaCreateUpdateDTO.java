@@ -1,18 +1,19 @@
-// src/main/java/com/example/vagas/dto/EmpresaCreateUpdateDTO.java
-
 package com.example.vagas.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class EmpresaCreateUpdateDTO {
-    
-    @NotBlank(message = "O nome da empresa é obrigatório.")
+
     private String nome;
     
-    @NotBlank(message = "O nome fantasia é obrigatório.")
-    private String nomeFantasia;
+    // CORRIGIDO: Adicionado campo nomeFantasia
+    private String nomeFantasia; 
     
-    // Adicione validações para outros campos
+    private String cnpj;
+    private String descricao;
+    private String email;
+    private String telefone;
 }

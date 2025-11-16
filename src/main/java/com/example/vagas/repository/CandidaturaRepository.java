@@ -6,16 +6,14 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface CandidaturaRepository extends JpaRepository<Candidatura, Long> {
+// CORRIGIDO: O ID da Candidatura é Long, não UUID.
+public interface CandidaturaRepository extends JpaRepository<Candidatura, Long> { 
 
-    // 1. Verificar se o usuário já se candidatou à vaga
-    Optional<Candidatura> findByVagaIdAndCandidatoId(Long vagaId, java.util.UUID candidatoId);
-    
-    // 2. Listar candidaturas de um usuário (Candidato - Meu Painel)
-    List<Candidatura> findByCandidatoId(java.util.UUID candidatoId);
-    
-    // 3. Listar candidaturas para uma vaga (Empresa - Gerenciamento)
-    List<Candidatura> findByVagaId(Long vagaId);
+    // Métodos para VagaId e CandidatoId (UUID) estão corretos
+    Optional<Candidatura> findByVagaIdAndCandidatoId(UUID vagaId, UUID candidatoId);
+    List<Candidatura> findByCandidatoId(UUID candidatoId);
+    List<Candidatura> findByVagaId(UUID vagaId);
 }

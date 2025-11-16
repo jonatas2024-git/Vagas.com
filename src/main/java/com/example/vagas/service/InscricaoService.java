@@ -29,26 +29,26 @@ public class InscricaoService {
     private final SecurityUtils securityUtils;
 
     // =========================================================================
-    // 1. GESTÃO DO CANDIDATO (POST /api/inscricoes)
+    // 1. GESTÃO DO CANDIDATO
     // =========================================================================
 
     /**
      * Permite que o usuário logado se inscreva em uma vaga.
-     * Requer o ID da vaga.
      */
     @Transactional
-    public InscricaoDTO candidatar(Long vagaId) {
+    public InscricaoDTO candidatar(UUID vagaId) { // CORRIGIDO: Aceita UUID
         // 1. Obter o User logado (Candidato)
         UUID currentUserId = securityUtils.getCurrentUserId();
         User candidato = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário candidato não encontrado."));
 
         // 2. Obter a Vaga
-        Vaga vaga = vagaRepository.findById(vagaId)
+        Vaga vaga = vagaRepository.findById(vagaId) // ID da Vaga é UUID
                 .orElseThrow(() -> new ResourceNotFoundException("Vaga não encontrada com ID: " + vagaId));
 
         // 3. REGRA DE NEGÓCIO: Verificar se o usuário já se candidatou
-        if (inscricaoRepository.existsByCandidatoIdAndVagaId(currentUserId, vagaId)) {
+        // LINHA 52 (no log anterior) corrigida: Usa UUID para Vaga ID.
+        if (inscricaoRepository.existsByCandidatoIdAndVagaId(currentUserId, vagaId)) { 
             throw new IllegalArgumentException("Você já está inscrito nesta vaga.");
         }
         
@@ -57,7 +57,7 @@ public class InscricaoService {
                 .candidato(candidato)
                 .vaga(vaga)
                 .dataInscricao(LocalDateTime.now())
-                .status("PENDENTE") // Define um status inicial
+                .status("PENDENTE") 
                 .build();
 
         return mapToDTO(inscricaoRepository.save(inscricao));
@@ -67,7 +67,7 @@ public class InscricaoService {
      * Permite que o usuário cancele sua própria inscrição em uma vaga.
      */
     @Transactional
-    public void cancelarInscricao(Long inscricaoId) {
+    public void cancelarInscricao(Long inscricaoId) { // Inscricao ID é Long, OK
         UUID currentUserId = securityUtils.getCurrentUserId();
 
         Inscricao inscricao = inscricaoRepository.findById(inscricaoId)
@@ -93,44 +93,41 @@ public class InscricaoService {
     }
 
     // =========================================================================
-    // 2. GESTÃO DA EMPRESA (GET /api/empresas/{empresaId}/candidatos)
+    // 2. GESTÃO DA EMPRESA
     // =========================================================================
 
     /**
      * Lista todos os candidatos para uma vaga específica.
-     * Aplica REGRA DE SEGURANÇA: Somente o dono da empresa pode ver os candidatos.
      */
-    public List<InscricaoDTO> listarCandidatosPorVaga(Long vagaId) {
-        Vaga vaga = vagaRepository.findById(vagaId)
+    public List<InscricaoDTO> listarCandidatosPorVaga(UUID vagaId) { // CORRIGIDO: Aceita UUID
+        Vaga vaga = vagaRepository.findById(vagaId) // ID da Vaga é UUID
                 .orElseThrow(() -> new ResourceNotFoundException("Vaga não encontrada com ID: " + vagaId));
 
         // 1. REGRA DE SEGURANÇA: Checar se o usuário logado é o dono da empresa
         UUID currentUserId = securityUtils.getCurrentUserId();
+        
+        // LINHA 113 (no log anterior) corrigida: Usa getOwner().getId() que retorna UUID.
         if (!vaga.getEmpresa().getOwner().getId().equals(currentUserId)) {
             throw new SecurityException("Acesso negado. Você não é o dono desta vaga.");
         }
 
         // 2. Buscar inscrições
-        return inscricaoRepository.findByVagaId(vagaId).stream()
+        return inscricaoRepository.findByVagaId(vagaId).stream() // ID da Vaga é UUID
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
     
     // =========================================================================
-    // 3. MÉTODO DE MAPEAMENTO (Inscricao -> InscricaoDTO)
+    // 3. MÉTODO DE MAPEAMENTO
     // =========================================================================
     
-    /**
-     * Mapeia a Entidade Inscricao para o DTO.
-     * OBS: O InscricaoDTO deve incluir campos do Candidato e da Vaga/Empresa para ser útil.
-     */
     private InscricaoDTO mapToDTO(Inscricao inscricao) {
         return InscricaoDTO.builder()
-                .id(inscricao.getId())
-                .vagaId(inscricao.getVaga().getId())
+                .id(inscricao.getId()) // Long, OK
+                .vagaId(inscricao.getVaga().getId()) // UUID, OK
                 .vagaTitulo(inscricao.getVaga().getTitulo())
-                .candidatoId(inscricao.getCandidato().getId())
-                .candidatoNome(inscricao.getCandidato().getName()) // Assumindo que User.getName() existe
+                .candidatoId(inscricao.getCandidato().getId()) // UUID, OK
+                .candidatoNome(inscricao.getCandidato().getUsername())
                 .dataInscricao(inscricao.getDataInscricao())
                 .status(inscricao.getStatus())
                 .build();

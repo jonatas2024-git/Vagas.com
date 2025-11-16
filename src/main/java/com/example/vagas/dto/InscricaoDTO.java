@@ -19,7 +19,7 @@ public class InscricaoDTO {
     private Long id;
 
     // Informações da Vaga
-    private Long vagaId;
+    private java.util.UUID vagaId; // Correto: UUID
     private String vagaTitulo;
 
     // Informações do Candidato

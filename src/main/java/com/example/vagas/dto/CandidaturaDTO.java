@@ -9,12 +9,12 @@ import java.time.LocalDateTime;
 @Builder
 public class CandidaturaDTO {
     private Long id;
-    private Long vagaId;
+    private java.util.UUID vagaId; // Correto: UUID
     private String vagaTitulo;
-    private Long empresaId; // Pode ser útil para visualização
+    private Long empresaId; 
     private String empresaNome;
-    private java.util.UUID candidatoId; // Opcional, mas útil para Empresa
-    private String candidatoNome; // Opcional, mas útil para Empresa
+    private java.util.UUID candidatoId; 
+    private String candidatoNome;
     private CandidaturaStatus status;
     private LocalDateTime dataCandidatura;
 }

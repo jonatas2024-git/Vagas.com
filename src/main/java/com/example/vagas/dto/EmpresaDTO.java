@@ -4,15 +4,16 @@ package com.example.vagas.dto;
 
 import lombok.Builder;
 import lombok.Data;
-import java.util.UUID; // Importação necessária para o ID do dono
+import java.util.UUID; 
 
 @Data
 @Builder
 public class EmpresaDTO {
-    private Long id;
+    // CORRIGIDO: ID da Empresa padronizado para Long
+    private Long id; 
     private String nome;
     private String nomeFantasia;
     
-    // CORRIGIDO: Deve ser UUID para corresponder ao User.id
+    // O ID do Dono (User) é UUID, OK.
     private UUID ownerUserId; 
 }

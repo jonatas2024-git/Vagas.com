@@ -1,19 +1,15 @@
-package com.example.vagas.repository.specifications; 
+package com.example.vagas.repository.specifications;
 
-import com.example.vagas.model.Vaga;
 import com.example.vagas.dto.VagaFilterDTO;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import com.example.vagas.model.Vaga;
+import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
 import org.springframework.lang.NonNull; 
-import org.springframework.lang.Nullable;
+// IMPORT NECESSÁRIO
+import org.springframework.lang.Nullable; 
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 public class VagaSpecification implements Specification<Vaga> {
@@ -24,52 +20,83 @@ public class VagaSpecification implements Specification<Vaga> {
         this.filters = filters;
     }
 
-    // CORREÇÃO: 'query' deve ser @Nullable para satisfazer a interface
     @Override
-    public Predicate toPredicate(@NonNull Root<Vaga> root, @Nullable CriteriaQuery<?> query, @NonNull CriteriaBuilder builder) {
-        List<Predicate> predicates = new ArrayList<>();
+    // CORRIGIDO: CQ foi alterado para @Nullable, pois a interface Specification exige.
+    public Predicate toPredicate(@NonNull Root<Vaga> root,
+                                 @Nullable CriteriaQuery<?> cq, // <--- CORREÇÃO AQUI
+                                 @NonNull CriteriaBuilder cb) {
 
-        // 1. FILTRO DE TERMO GERAL (Query - q)
+        Predicate p = cb.conjunction();
+
+        if (filters == null) return p;
+
+        /** -------------------------- BUSCA FULLTEXT BÁSICA -------------------------- */
         if (StringUtils.hasText(filters.getQuery())) {
-            String queryPattern = "%" + filters.getQuery().toLowerCase() + "%";
-            
-            // Cria uma cláusula OR para buscar em múltiplos campos
-            Predicate termPredicate = builder.or(
-                builder.like(builder.lower(root.get("titulo")), queryPattern),
-                builder.like(builder.lower(root.get("descricao")), queryPattern),
-                builder.like(builder.lower(root.get("empresa").get("nome")), queryPattern)
+            String like = "%" + filters.getQuery().toLowerCase() + "%";
+
+            Predicate byTitulo = cb.like(cb.lower(root.get("titulo")), like);
+
+            Predicate byEmpresa = cb.like(
+                    cb.lower(root.get("empresa").get("nomeFantasia")),
+                    like
             );
-            predicates.add(termPredicate);
+
+            Predicate byCidade = cb.like(cb.lower(root.get("cidade")), like);
+
+            p = cb.and(p, cb.or(byTitulo, byEmpresa, byCidade));
         }
 
-        // 2. FILTRO DE LOCALIZAÇÃO (Location)
-        if (StringUtils.hasText(filters.getLocation())) {
-            String locationPattern = "%" + filters.getLocation().toLowerCase() + "%";
-            predicates.add(builder.like(builder.lower(root.get("localizacao")), locationPattern));
+        if (StringUtils.hasText(filters.getCidade())) {
+            p = cb.and(p,
+                    cb.equal(cb.lower(root.get("cidade")),
+                            filters.getCidade().toLowerCase())
+            );
         }
 
-        // 3. FILTRO AVANÇADO: SALÁRIO MÍNIMO (minSalary)
-        if (filters.getMinSalary() != null) {
-            predicates.add(builder.greaterThanOrEqualTo(root.get("salarioMinimo"), filters.getMinSalary()));
+        if (StringUtils.hasText(filters.getUf())) {
+            p = cb.and(p,
+                    cb.equal(cb.lower(root.get("uf")),
+                            filters.getUf().toLowerCase())
+            );
         }
 
-        // 4. FILTRO AVANÇADO: TIPO DE CONTRATO (contractType)
-        if (StringUtils.hasText(filters.getContractType())) {
-            predicates.add(builder.equal(builder.lower(root.get("tipoContrato")), filters.getContractType().toLowerCase()));
+        if (StringUtils.hasText(filters.getTipoContrato())) {
+            p = cb.and(p,
+                    cb.equal(root.get("tipoContrato"),
+                            Vaga.TipoContrato.valueOf(filters.getTipoContrato()))
+            );
         }
 
-        // 5. FILTRO AVANÇADO: NÍVEL DE EXPERIÊNCIA (experienceLevel)
-        if (StringUtils.hasText(filters.getExperienceLevel())) {
-            predicates.add(builder.equal(builder.lower(root.get("nivelExperiencia")), filters.getExperienceLevel().toLowerCase()));
-        }
-        
-        // 6. FILTRO AVANÇADO: DATA DE PUBLICAÇÃO (publishedAfter)
-        if (filters.getPublishedAfter() != null) {
-            LocalDateTime startDateTime = filters.getPublishedAfter().atStartOfDay();
-            predicates.add(builder.greaterThanOrEqualTo(root.get("dataPublicacao"), startDateTime));
+        if (StringUtils.hasText(filters.getSenioridade())) {
+            p = cb.and(p,
+                    cb.equal(root.get("senioridade"),
+                            Vaga.Senioridade.valueOf(filters.getSenioridade()))
+            );
         }
 
-        // Combina todos os predicados com AND
-        return builder.and(predicates.toArray(new Predicate[0]));
+        if (StringUtils.hasText(filters.getModeloTrabalho())) {
+            p = cb.and(p,
+                    cb.equal(root.get("modeloTrabalho"),
+                            Vaga.ModeloTrabalho.valueOf(filters.getModeloTrabalho()))
+            );
+        }
+
+        /** ------- FILTRO SKILLS (USANDO JSONB @>) ------- */
+        List<String> skills = filters.getSkills();
+        if (skills != null && !skills.isEmpty()) {
+
+            String jsonArray = skills.toString().replace(" ", "");
+
+            Expression<Boolean> jsonContains = cb.function(
+                    "jsonb_contains",
+                    Boolean.class,
+                    root.get("skillsObrigatorias"),
+                    cb.literal(jsonArray)
+            );
+
+            p = cb.and(p, jsonContains);
+        }
+
+        return p;
     }
 }

@@ -12,26 +12,16 @@ import java.util.UUID;
 @Repository
 public interface VagaViewRepository extends JpaRepository<VagaView, UUID> {
 
-    // Método para obter a contagem de visualizações por Vaga
-    long countByVaga_Id(Long vagaId);
-    
-    // =========================================================================
-    // Métricas para a Empresa (para o painel de métricas que criaremos)
-    // =========================================================================
-    
-    /**
-     * Conta o total de visualizações para todas as vagas de uma determinada empresa.
-     */
+    // Contagem de visualizações por vaga
+    long countByVaga_Id(UUID vagaId);
+
+    // Métricas da empresa
     @Query("SELECT count(v) FROM VagaView v WHERE v.vaga.empresa.id = :empresaId")
-    long countViewsByEmpresaId(@Param("empresaId") Long empresaId);
-    
-    /**
-     * Lista o top N de vagas por contagem de visualizações em uma determinada empresa.
-     * Esta é a chave para o Item 8.
-     */
+    long countViewsByEmpresaId(@Param("empresaId") UUID empresaId);
+
     @Query("SELECT v.vaga.id, count(v) AS viewCount FROM VagaView v " +
            "WHERE v.vaga.empresa.id = :empresaId " +
            "GROUP BY v.vaga.id " +
            "ORDER BY viewCount DESC")
-    List<Object[]> findTopVagasByViewsForEmpresa(@Param("empresaId") Long empresaId);
+    List<Object[]> findTopVagasByViewsForEmpresa(@Param("empresaId") UUID empresaId);
 }

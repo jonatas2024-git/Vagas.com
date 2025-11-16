@@ -9,6 +9,7 @@ import java.util.UUID;
 
 @Repository
 public interface PerfilRepository extends JpaRepository<Perfil, Long> {
-    // CORRIGIDO: O tipo de argumento deve ser UUID para corresponder ao User.id e ao SecurityUtils
-    Optional<Perfil> findByUserId(UUID userId); 
+    // O id da entidade Perfil é Long -> por isso JpaRepository<Perfil, Long>
+    // O id do User (relacionamento) pode ser UUID, então este método usa UUID.
+    Optional<Perfil> findByUserId(UUID userId);
 }
