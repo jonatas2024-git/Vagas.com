@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:15-alpine
+    container_name: vagas_postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER:-vagasuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-vagaspass}
+      POSTGRES_DB: ${DB_NAME:-vagasdb}
+    volumes:
+      - vagas-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql   # <-- linha correta aqui!
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-vagasuser} -d ${DB_NAME:-vagasdb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    env_file:
+      - .env
+
+  backend:
+    build: .
+    container_name: vagas_backend
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${DB_HOST:-database}:${DB_PORT:-5432}/${DB_NAME:-vagasdb}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-vagasuser}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-vagaspass}
+
+      JWT_SECRET: ${JWT_SECRET}
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      FRONTEND_REDIRECT_URI: ${FRONTEND_REDIRECT_URI}
+
+volumes:
+  vagas-data:
+
+
+#version: '3.8'
+
+#services:
+ # database:
+  #  image: postgres:15-alpine
+   # container_name: vagas_postgres
+    #ports:
+     # - "5432:5432"
+    #environment:
+     # POSTGRES_USER: ${DB_USER:-vagasuser}
+     # POSTGRES_PASSWORD: ${DB_PASSWORD:-vagaspass}
+      # POSTGRES_DB: ${DB_NAME:-vagasdb}
+    # volumes:
+      #- vagas-data:/var/lib/postgresql/data
+    # env_file:
+      #- .env  # <-- adicione aqui, dentro do serviço
+
+  #backend:
+   # build: .
+    #container_name: vagas_backend
+    #ports:
+     # - "8080:8080"
+    #depends_on:
+     # - database
+    #env_file:
+     # - .env  # <-- e também aqui
+    #environment:
+     # DB_HOST: ${DB_HOST}
+      #DB_USER: ${DB_USER}
+      #DB_PASSWORD: ${DB_PASSWORD}
+      #DB_NAME: ${DB_NAME}
+
+      #JWT_SECRET: ${JWT_SECRET}
+      #MAIL_USER: ${MAIL_USER}
+      #MAIL_PASSWORD: ${MAIL_PASSWORD}
+
+      #GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      #GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      #FRONTEND_REDIRECT_URI: ${FRONTEND_REDIRECT_URI}
+
+    #restart: always
+
+#volumes:
+  #vagas-data:

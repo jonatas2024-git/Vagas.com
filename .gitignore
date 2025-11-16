@@ -1,0 +1,24 @@
+# Diretórios de Build e Saída
+/target/
+/bin/
+/out/
+.env
+
+# Dependências
+/lib/
+/tmp/
+/classes/
+
+# Arquivos de IDE (IntelliJ, Eclipse, VS Code)
+.idea/
+*.iml
+*.iws
+*.ipr
+.settings/
+.classpath
+.project
+.vscode/
+
+# Gradle
+.gradle/
+build/
